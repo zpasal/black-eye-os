@@ -1,9 +1,11 @@
 #ifndef __CONSOLE_H
 #define __CONSOLE_H
 
+#include <kernel.h>
+
 #define CONSOLE_80_25_SIZE (80*25*2)
 #define CONSOLE_BG_FG_COLOR(fg_color, bg_color) ((bg_color << 4) | (fg_color & 0x0F))
-#define CONSOLE_VIDEO_MEMORY ((char*)0xB8000)
+#define CONSOLE_VIDEO_MEMORY (KERNEL_VMA + 0xB8000)
 
 enum COLORS {
     BLACK,

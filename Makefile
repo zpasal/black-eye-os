@@ -41,7 +41,7 @@ $(kernel): $(assembly_object_files) $(c_object_files) $(linker_script)
 # compile assembly files
 build/%.o: src/%.asm
 	@mkdir -p $(shell dirname $@)
-	@nasm -felf64 $< -o $@
+	@nasm -w-number-overflow -felf64 $< -o $@
 
 # compile c files
 build/%.o: src/%.c
