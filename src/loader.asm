@@ -1,13 +1,14 @@
 extern long_mode_start
 
-%define KERNEL_VMA 0xFFFF800000000000
+%define KERNEL_VMA          0xFFFF800000000000
+%define KERNEL_STACK_SIZE   4096
 
 section .texts
 bits 32
 global start
 start:
     ; setup stack
-    mov esp, (stack_top - KERNEL_VMA)
+    mov esp, (kernel_stack_top - KERNEL_VMA)
 
     ; setup page entries to map kernel from KERNEL_VMA up to 2MB
     call set_up_page_tables
@@ -17,7 +18,7 @@ start:
     ; ; load the 64-bit GDT
     lgdt [(gdt64.pointer - KERNEL_VMA)]
 
-
+    ; jump to refresh RIP and new GDT
     jmp gdt64.code:(long_mode_start - KERNEL_VMA)
 
 
@@ -102,8 +103,8 @@ gdt64:
 
 
 section .bss
-align 4096
+align 4
 stack_bottom:
-    resb 512
-global stack_top
-stack_top:
+    resb KERNEL_STACK_SIZE
+global kernel_stack_top
+kernel_stack_top:

@@ -1,3 +1,4 @@
+#include <multiboot.h>
 #include <console.h>
 
 void krnl_prepare_console() {
@@ -9,7 +10,6 @@ void krnl_prepare_console() {
 
 int main() {
 	krnl_prepare_console();
-	
 	puts("Kernel done.");
 	return 0;
 }
