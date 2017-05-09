@@ -1,16 +1,17 @@
 #include <multiboot.h>
 #include <console.h>
+#include <stdint.h>
 
 void krnl_prepare_console() {
 	__krnl_console.buffer = (char*)0xFFFF8000000B8000;
 	console_init(&__krnl_console);
-	puts("OS main()\n");
-	puts("Kernel console initialized.\n");
+	puts("BlackEye OS main()\n");
 }
 
-int main() {
+
+void kmain(const multiboot_info_t* mbinfo) {
 	krnl_prepare_console();
-	puts("Kernel done.\n");
-	return 0;
+	printf("Kernel loaded  @ %p\n", KERNEL_VMA);
+	printf("Multiboot Info @ %p\n", mbinfo);
+	puts("Kernel initialized.");
 }
-

@@ -10,13 +10,18 @@ start:
     ; Note: All addressing before long jump to long_mode_start MUST be
     ; relative - substract KERNEL_VMA from all adresses
     
+
     ; setup stack
     mov esp, (kernel_stack_top - KERNEL_VMA)
+    push ebx
 
     ; setup page entries to map kernel from KERNEL_VMA up to 2MB
     call set_up_page_tables
     ; setup cr4 and cr3 to enable pagging
     call enable_paging
+
+
+    pop ebx
 
     ; ; load the 64-bit GDT
     lgdt [(gdt64.pointer - KERNEL_VMA)]
@@ -107,7 +112,7 @@ gdt64:
 
 section .bss
 align 4
-stack_bottom:
+kernel_stack_bottom:
     resb KERNEL_STACK_SIZE
 global kernel_stack_top
 kernel_stack_top:
