@@ -7,6 +7,9 @@ section .texts
 bits 32
 global start
 start:
+    ; Note: All addressing before long jump to long_mode_start MUST be
+    ; relative - substract KERNEL_VMA from all adresses
+    
     ; setup stack
     mov esp, (kernel_stack_top - KERNEL_VMA)
 
