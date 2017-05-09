@@ -42,5 +42,6 @@ void console_putch(t_console *console, char ch);
 void console_puts(t_console *console, char *string);
 
 void puts(char *string);
+void printf(const char *fmt, ...);
 
 #endif

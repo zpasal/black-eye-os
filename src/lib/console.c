@@ -1,5 +1,7 @@
 #include <console.h>
 #include <string.h>
+#include <stdarg.h>
+#include <_printf.h>
 
 int __console_id = 0;
 t_console __krnl_console;
@@ -42,7 +44,29 @@ void console_puts(t_console *console, char *string) {
 	console_putch(console, '\n');
 }
 
+
+int cprintf_help(unsigned c, void *ptr) {
+	t_console *console = (t_console*)ptr;
+	console_putch(console, c);
+	return 0;
+}
+
+void console_printf(t_console *console, const char *fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	(void)_printf(fmt, args, cprintf_help, console);
+	va_end(args);
+}
+
+
+// MOVE THIS TO KERNEL.C/H
 void puts(char *string) {
 	console_puts(&__krnl_console, string);
 }
-
+ 
+void printf(const char *fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	(void)_printf(fmt, args, cprintf_help, &__krnl_console);
+	va_end(args);
+}

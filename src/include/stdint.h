@@ -1,18 +1,19 @@
 #ifndef _STDINT_H
 #define _STDINT_H
 
-#include <bits/wirdsize.h>
+#include <bits/wordsize.h>
+#include <types.h>
 
 #ifndef __int8_t_defined
 # define __int8_t_defined
 typedef signed char		int8_t;
 typedef short int		int16_t;
-typedef int			int32_t;
+typedef int				int32_t;
 # if __WORDSIZE == 64
 typedef long int		int64_t;
 # else
 __extension__
-typedef long long int		int64_t;
+typedef long long int	int64_t;
 # endif
 #endif
 

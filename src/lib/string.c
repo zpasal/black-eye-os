@@ -1,4 +1,5 @@
 #include <string.h>
+#include <types.h>
 
 void *memset(void* dest, register int value, register int len) {
 	register unsigned char *ptr = (unsigned char*)dest;
@@ -15,4 +16,12 @@ void *memcpy(void *dest, void *src, register int len) {
 		*bdest++ = *bsrc++;
 	}
 	return dest;
+}
+
+size_t strlen(const char *str) {
+	size_t s;
+	for(s=0; *str!='\0'; str++) {
+    	s++;
+	}
+	return s;
 }
