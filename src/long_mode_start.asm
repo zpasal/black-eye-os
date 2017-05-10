@@ -35,5 +35,6 @@ long_mode_start:
     mov rax, qword 0xFFFF800000000000
     add rax, rbx 
     mov rdi, rax
+
     call kmain
     hlt

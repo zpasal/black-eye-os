@@ -4,14 +4,14 @@
 #include <_printf.h>
 
 int __console_id = 0;
-t_console __krnl_console;
+console_t __krnl_console;
 
-t_console* console_init(t_console *console) {
+console_t* console_init(console_t *console) {
 	console_reset(console);
 	return console;
 }
 
-t_console* console_reset(t_console *console) {
+console_t* console_reset(console_t *console) {
 	console->id = __console_id++;
 	console->color = CONSOLE_BG_FG_COLOR(LIGHTGRAY, BLACK);
 	console->current_index = 0;
@@ -19,7 +19,7 @@ t_console* console_reset(t_console *console) {
 	return console;
 }
 
-void console_putch(t_console *console, char ch) {
+void console_putch(console_t *console, char ch) {
 	char *buffer = console->buffer + console->current_index*2;
 
 	switch(ch) {
@@ -37,7 +37,7 @@ void console_putch(t_console *console, char ch) {
 	}
 }
 
-void console_puts(t_console *console, char *string) {
+void console_puts(console_t *console, char *string) {
 	while(*string) {
 		console_putch(console, *string++);
 	}
@@ -46,12 +46,12 @@ void console_puts(t_console *console, char *string) {
 
 
 int cprintf_help(unsigned c, void *ptr) {
-	t_console *console = (t_console*)ptr;
+	console_t *console = (console_t*)ptr;
 	console_putch(console, c);
 	return 0;
 }
 
-void console_printf(t_console *console, const char *fmt, ...) {
+void console_printf(console_t *console, const char *fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
 	(void)_printf(fmt, args, cprintf_help, console);

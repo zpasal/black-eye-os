@@ -31,15 +31,15 @@ typedef struct {
 	char color;
 	char *buffer;
 	int  current_index;
-} t_console; 
+} console_t; 
 
 extern int __CONSOLE_ID;
-extern t_console __krnl_console;
+extern console_t __krnl_console;
 
-t_console* console_init(t_console *console);
-t_console* console_reset(t_console *console);
-void console_putch(t_console *console, char ch);
-void console_puts(t_console *console, char *string);
+console_t* console_init(console_t *console);
+console_t* console_reset(console_t *console);
+void console_putch(console_t *console, char ch);
+void console_puts(console_t *console, char *string);
 
 void puts(char *string);
 void printf(const char *fmt, ...);
