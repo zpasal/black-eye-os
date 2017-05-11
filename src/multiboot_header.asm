@@ -9,7 +9,7 @@ header_start:
     ; insert optional multiboot tags here
 
     ; required end tag
-    dw 0    ; type
-    dw 0    ; flags
-    dd 8    ; size
+    dw 0 ; type
+    dw 0 ; flags
+    dd 8 ; size
 header_end:

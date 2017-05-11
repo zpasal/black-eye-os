@@ -12,6 +12,7 @@ long_mode_start:
     ; load 0 into all data segment registers
     cli
 
+    ; reset segments registers jun in case (in case of what?)
     mov ax, 0
     mov ss, ax
     mov ds, ax
@@ -19,22 +20,17 @@ long_mode_start:
     mov fs, ax
     mov gs, ax
 
-
-    ; Clear p4_table entry 0 (leave only 0xFFFF800000000000 address space)
+    ; Clear  pml4e 0th entry to remove flat memory mapping
+    ; That will leave only 0xFFFF800000000000 address space
     mov rax, pml4e_table
     mov dword [rax], 0
     invlpg [0]
 
     ; setup new stack
     mov rsp, kernel_stack_top
-    mov rbp, rsp
 
     ; GRUB stores a pointer to a struct in the register ebx that,
     ; among other things, describes at which addresses the modules are loaded.
     ; Push ebx on the stack before calling main to make it an argument for main.
-    mov rax, qword 0xFFFF800000000000
-    add rax, rbx 
-    mov rdi, rax
-
     call kmain
     hlt

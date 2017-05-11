@@ -101,6 +101,9 @@ long num;
 			case 'n':
 				radix = 16;
 				goto DO_NUM;
+			case 'b':
+				radix = 2;
+				goto DO_NUM;
 			case 'd':
 			case 'i':
 				flags |= PR_SG;

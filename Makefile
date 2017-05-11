@@ -10,7 +10,7 @@ cc := gcc
 c_include := 'src/include'
 cflags := -fno-pic -m64 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
 		  -ffreestanding -mno-red-zone -mno-mmx -mno-sse -mno-sse2 \
-	      -I $(c_include) -nostartfiles -nodefaultlibs \
+	      -I $(c_include) -nostartfiles -nodefaultlibs -fno-exceptions \
 	      -Wall -Wextra -Werror -c -mcmodel=large 
 c_source_files := $(wildcard src/*.c) $(wildcard src/lib/*.c)
 c_object_files := $(patsubst src/%.c, \
@@ -37,6 +37,8 @@ $(iso): $(kernel) $(grub_cfg)
 
 $(kernel): $(assembly_object_files) $(c_object_files) $(linker_script)
 	@ld -nostdlib -n -T $(linker_script) -o $(kernel) $(assembly_object_files) $(c_object_files)
+	@objdump -D $(kernel) > build/dump.asm
+	@objdump -x $(kernel) >> build/dump.asm
 
 # compile assembly files
 build/%.o: src/%.asm

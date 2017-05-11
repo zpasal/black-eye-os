@@ -42,6 +42,7 @@ common_interrupt_handler:
   push rax
 
   ; call the C function
+  mov rsi, cr2
   call interrupt_handler
   
   pop rax
@@ -64,13 +65,3 @@ common_interrupt_handler:
 
   ; return to the code that got interrupted
   iretq
-
-global _interrupt
-_interrupt:
-  int 100
-  mov rax, 0xdead
-  ret                 ; return to the calling function
-
-global _hlt
-_hlt:
-  hlt
