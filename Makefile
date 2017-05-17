@@ -15,6 +15,7 @@ cflags := -fno-pic -m64 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
 c_source_files := $(wildcard src/*.c) $(wildcard src/lib/*.c)
 c_object_files := $(patsubst src/%.c, \
 	build/%.o, $(c_source_files))
+quemu_mem := 128M
 
 .PHONY: all clean run iso
 
@@ -24,7 +25,7 @@ clean:
 	@rm -r build
 
 run: $(iso)
-	@qemu-system-x86_64 -cdrom $(iso)
+	@qemu-system-x86_64 -cdrom $(iso) 
 
 iso: $(iso)
 

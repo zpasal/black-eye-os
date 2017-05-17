@@ -3,7 +3,7 @@ extern long_mode_start
 %define KERNEL_VMA          0xFFFF800000000000
 %define KERNEL_STACK_SIZE   4096
 
-section .texts
+section .text
 bits 32
 global start
 start:
@@ -33,12 +33,19 @@ start:
 
 ; Maps memory from 0x0000 -> 2MB and KERNEL_VMA ->2MB
 set_up_page_tables:
-    ; map 1th and 0x100th (KERNEL_VMA) P4 entry to P3 table
+    ; map 0th P4 entry to P3 table
     mov eax, (pdpe_table - KERNEL_VMA)
     or eax, 0b11 ; present + writable
     mov [(pml4e_table - KERNEL_VMA)], eax
 
+    ; and 0x100th to KERNEL_VMA
     mov ecx, 0x100
+    mov [(pml4e_table - KERNEL_VMA) + ecx * 8], eax
+
+    ; and 511 (last) to itself (recursive mappings : see paging.c)
+    mov eax, (pml4e_table - KERNEL_VMA)
+    or eax, 0b11
+    mov ecx, 511
     mov [(pml4e_table - KERNEL_VMA) + ecx * 8], eax
 
     ; map first P3 entry to P2 table
@@ -93,13 +100,19 @@ section .data
 align 4096
 global pml4e_table
 pml4e_table:
-    times 512 dq 0 ; 0x100 points to pdpe_table
+    times 512 dq 0 ; 0 temporary to pdpe, 0x100 points to pdpe_table, last points to itself
+global pdpe_table
 pdpe_table:
     times 512 dq 0 ; 0th point to pde_table
+global pde_table
 pde_table: 
     times 512 dq 0 ; 0th points to pte_table
+global pte_table
 pte_table:
     times 512 dq 0 ; points incrementaly to all 4k pages
+global tmp_mem_bitmap
+tmp_mem_bitmap:
+    times 512 dq 0 ; temporary mem table 1bit = 4K total of 128MB
 
 section .rodata
 gdt64:

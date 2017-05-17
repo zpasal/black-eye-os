@@ -7,61 +7,42 @@ ENTRY(start)
 SECTIONS
 {
     . = KERNEL_LMA;
-    _start = .;
     .boot : {
-        _code = .;
-        *(.multiboot_header)
+      *(.multiboot_header)
     }
 
     . += KERNEL_VMA;
   
     .text : AT(ADDR(.text) - KERNEL_VMA)
     {
-        _code = .;
-        *(EXCLUDE_FILE(multiboot_header) .text)
-        *(.text)
-        . = ALIGN(4096);
+      *(EXCLUDE_FILE(multiboot_header) .text)
+      *(.text)
     }
 
-   .rodata ALIGN (0x1000) : AT(ADDR(.rodata) - KERNEL_VMA)
-   {
-        _rodata = .;
-        *(.rodata)
-        . = ALIGN(4096);
-   }
+    .rodata ALIGN (0x1000) : AT(ADDR(.rodata) - KERNEL_VMA)
+    {
+      *(.rodata)
+    }
 
-   .data ALIGN (0x1000) : AT(ADDR(.data) - KERNEL_VMA)
-   {
-        _data = .;
-        *(.data)
-        . = ALIGN(4096);
-   }
+    .data ALIGN (0x1000) : AT(ADDR(.data) - KERNEL_VMA)
+    {
+      *(.data)
+    }
 
-   .eh_frame ALIGN (0x1000) : AT(ADDR(.eh_frame) - KERNEL_VMA)
-   {
-       _ehframe = .;
-       *(.eh_frame)
-        . = ALIGN(4096);
-   }
+    .bss ALIGN (0x1000) : AT(ADDR(.bss) - KERNEL_VMA)
+    {
+      *(.bss)
+      /*
+      * You usually need to include generated COMMON symbols
+      * under kernel BSS section or use gcc's -fno-common
+      */
+      *(COMMON)
+    }
 
-   .bss ALIGN (0x1000) : AT(ADDR(.bss) - KERNEL_VMA)
-   {
-       _bss = .;
-       *(.bss)
-
-       /*
-        * You usually need to include generated COMMON symbols
-        * under kernel BSS section or use gcc's -fno-common
-        */
-
-        *(COMMON)
-       . = ALIGN(4096);
-   }
-
-   _end = .;
-
-   /DISCARD/ :
-   {
-        *(.comment)
-   }
+    /DISCARD/ :
+    {
+      *(.comment)
+      /* Exception handling section - we do not need it*/
+      *(.eh_frame)
+    }
 }

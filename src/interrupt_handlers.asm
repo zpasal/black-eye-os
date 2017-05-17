@@ -1,4 +1,4 @@
-section .texts
+section .text
 bits 64
 
 extern interrupt_handler ; the C interrupt handler
