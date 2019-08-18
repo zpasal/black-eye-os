@@ -114,7 +114,7 @@ global tmp_mem_bitmap
 tmp_mem_bitmap:
     times 512 dq 0 ; temporary mem table 1bit = 4K total of 128MB
 
-section .rodata
+section .data
 gdt64:
     dq 0 ; zero entry
 .code: equ $ - gdt64 ; new

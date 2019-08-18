@@ -98,6 +98,7 @@ long num;
 			case 'x':
 			case 'p':
 				flags |= PR_64;
+				__attribute__ ((fallthrough));
 			case 'n':
 				radix = 16;
 				goto DO_NUM;
@@ -204,6 +205,7 @@ EMIT2:				if((flags & PR_LJ) == 0)
 			default:
 				break;
 			}
+		__attribute__ ((fallthrough));
 		default:
 			state = flags = given_wd = 0;
 			break;
