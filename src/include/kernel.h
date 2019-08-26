@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-void interrupt_handler();
-
-void load_idt(void* idt);
+void kputs(char *string);
+void kprintf(const char *fmt, ...);
+void PANIC(const char *fmt, ...);
 
 #endif

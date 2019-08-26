@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#define KB_TO_BYTE(x) ((x) * 1024)
+#define MB_TO_BYTE(x) ((x) * 1024 * 1024)
+#define GB_TO_BYTE(x) ((x) * 1024 * 1024 * 1024)
+
 static inline void x86_clts(void) {
     __asm__ __volatile__ ("clts"); 
 }

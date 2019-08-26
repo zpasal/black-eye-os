@@ -4,7 +4,6 @@
 #include <_printf.h>
 
 int __console_id = 0;
-console_t __krnl_console;
 
 console_t* console_init(console_t *console) {
 	console_reset(console);
@@ -20,17 +19,19 @@ console_t* console_reset(console_t *console) {
 }
 
 void console_putch(console_t *console, char ch) {
-	char *buffer = console->buffer + console->current_index*2;
+	// char *buffer = console->buffer + console->current_index*2;
 
 	switch(ch) {
 		case '\n':  // backspace
 			console->current_index = ((console->current_index + 80) / 80) * 80;
 			break;
 		default:
-			*buffer++ = ch;
-			*buffer++ = console->color;
+			console->buffer[console->current_index*2] = ch;
+			console->buffer[console->current_index*2+1] = console->color;
+			// *buffer++ = ch;
+			// *buffer++ = console->color;
 			console->current_index++;
-			if (console->current_index >= CONSOLE_80_25_SIZE) {
+			if (console->current_index >= 80*25) {
 				console->current_index = 0;
 			}
 			break;
@@ -55,18 +56,5 @@ void console_printf(console_t *console, const char *fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
 	(void)_printf(fmt, args, cprintf_help, console);
-	va_end(args);
-}
-
-
-// MOVE THIS TO KERNEL.C/H
-void puts(char *string) {
-	console_puts(&__krnl_console, string);
-}
- 
-void printf(const char *fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
-	(void)_printf(fmt, args, cprintf_help, &__krnl_console);
 	va_end(args);
 }

@@ -20,12 +20,6 @@ long_mode_start:
     mov fs, ax
     mov gs, ax
 
-    ; Clear  pml4e 0th entry to remove flat memory mapping
-    ; That will leave only 0xFFFF800000000000 address space
-    mov rax, pml4e_table
-    mov dword [rax], 0
-    invlpg [0]
-
     ; setup new stack
     mov rsp, kernel_stack_top
 

@@ -1,7 +1,7 @@
 extern long_mode_start
 
 %define KERNEL_VMA          0xFFFF800000000000
-%define KERNEL_STACK_SIZE   4096
+%define KERNEL_STACK_SIZE   4096*2
 
 section .text
 bits 32
@@ -13,8 +13,8 @@ start:
     ; save eax and ebx (grub magic and mb info) into esi and edi
     ; per GCC C ABI param specs 
     ; as it will be passed down to kernel main as arguments
-    mov esi, eax
-    mov edi, ebx
+    mov esi, ebx
+    mov edi, eax
 
     ; setup stack
     mov esp, (kernel_stack_top - KERNEL_VMA)
@@ -98,6 +98,7 @@ enable_paging:
 
 section .data
 align 4096
+
 global pml4e_table
 pml4e_table:
     times 512 dq 0 ; 0 temporary to pdpe, 0x100 points to pdpe_table, last points to itself
@@ -115,13 +116,31 @@ tmp_mem_bitmap:
     times 512 dq 0 ; temporary mem table 1bit = 4K total of 128MB
 
 section .data
-gdt64:
-    dq 0 ; zero entry
-.code: equ $ - gdt64 ; new
-    dq (1<<43) | (1<<44) | (1<<47) | (1<<53) ; code segment
-.pointer:
-    dw $ - gdt64 - 1
-    dq gdt64
+gdt64:                           ; Global Descriptor Table (64-bit).
+    .Null: equ $ - gdt64         ; The null descriptor.
+    dw 0xFFFF                    ; Limit (low).
+    dw 0                         ; Base (low).
+    db 0                         ; Base (middle)
+    db 0                         ; Access.
+    db 1                         ; Granularity.
+    db 0                         ; Base (high).
+    .code: equ $ - gdt64         ; The code descriptor.
+    dw 0                         ; Limit (low).
+    dw 0                         ; Base (low).
+    db 0                         ; Base (middle)
+    db 10011010b                 ; Access (exec/read).
+    db 10101111b                 ; Granularity, 64 bits flag, limit19:16.
+    db 0                         ; Base (high).
+    .data: equ $ - gdt64         ; The data descriptor.
+    dw 0                         ; Limit (low).
+    dw 0                         ; Base (low).
+    db 0                         ; Base (middle)
+    db 10010010b                 ; Access (read/write).
+    db 00000000b                 ; Granularity.
+    db 0                         ; Base (high).
+    .pointer:                    ; The GDT-pointer.
+    dw $ - gdt64 - 1             ; Limit.
+    dq gdt64                     ; Base.
 
 
 section .bss
@@ -130,3 +149,9 @@ kernel_stack_bottom:
     resb KERNEL_STACK_SIZE
 global kernel_stack_top
 kernel_stack_top:
+
+align 4096
+kernel_end:
+    resb 4096
+global kernel_end
+

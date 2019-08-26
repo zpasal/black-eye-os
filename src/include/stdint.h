@@ -58,4 +58,6 @@ typedef unsigned long long int	uint64_t;
 # define UINT32_MAX		(4294967295U)
 # define UINT64_MAX		(__UINT64_C(18446744073709551615))
 
+typedef uint64_t addr_t;
+
 #endif

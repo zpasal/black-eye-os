@@ -1,0 +1,11 @@
+2Received interrupt: 13 - General Protection Fault
+KHEAP: init ...
+ß instruction_pointer = 0xFFFF8000001010A610B000
+  code_segment        = 0x8
+  cpu_flags           = 0x10212
+  stack_pointer       = 0xFFFF80000010AEA0
+  stack_segment       = 0x0
+ISR: init gates ...
+ISR: Setting IDT
+ISR: enabling interrupts
+
