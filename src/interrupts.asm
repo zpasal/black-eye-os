@@ -2,6 +2,9 @@ global interrupt
 extern isr_handler
 extern irq_handler
 
+section .text
+bits 64
+
 %macro def_isr_handler 1
     global isr%1
     isr%1:

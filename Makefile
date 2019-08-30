@@ -14,6 +14,7 @@ grub_cfg := src/grub/grub.cfg
 assembly_source_files := $(wildcard src/*.asm)
 assembly_object_files := $(patsubst src/%.asm, \
 	build/%.o, $(assembly_source_files))
+nasm_flags := -w-number-overflow -felf64
 c_include := 'src/include'
 cflags := -fno-pic  -m64 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
 		  -ffreestanding -mno-red-zone -mno-mmx -mno-sse -mno-sse2 \
@@ -39,9 +40,13 @@ run-bocsh: $(iso)
 	$(bochs) -f bochsrc.txt -q
 
 run-qemu: $(iso)
-	$(qemu) -cdrom $(iso) -m $(quemu_mem) -drive file=$(floppy_image),if=floppy,format=raw -boot order=d -s -S
+	$(qemu) -cdrom $(iso) -m $(quemu_mem) -drive file=$(floppy_image),if=floppy,format=raw -boot order=d -s
 
 iso: $(iso)
+
+debug: nasm_flags += -g -F dwarf
+debug: cflags += -g
+debug: all
 
 $(iso): $(kernel) $(grub_cfg)
 	@mkdir -p build/isofiles/boot/grub
@@ -58,7 +63,7 @@ $(kernel): $(assembly_object_files) $(c_object_files) $(linker_script)
 # compile assembly files
 build/%.o: src/%.asm
 	@mkdir -p $(shell dirname $@)
-	$(nasm) -w-number-overflow -felf64 $< -o $@
+	$(nasm) $(nasm_flags) $< -o $@
 
 # compile c files
 build/%.o: src/%.c

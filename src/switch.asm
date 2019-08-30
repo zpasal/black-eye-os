@@ -1,8 +1,23 @@
 ; ----------------------------------------------------------------
 ; - TASK SWITCH
 
+extern next_task
 extern timer_callback
+extern current_task_index
+extern current_task
+
+
+
+; Must be in sync with task_t fro kernel.c
+struc task_t
+  .rsp 		resq 1
+  .id 		resd 1
+  .attrib 	resd 1
+endstruc
+
 global irq0
+global irq0_first_jump
+
 irq0:
     cli
     push rax
@@ -20,9 +35,17 @@ irq0:
     push r13
     push r14
     push r15
-    
-    mov rsi, rsp
-    call timer_callback
+
+    ; Store rsp of current task
+    call current_task
+    mov [rax], rsp
+
+irq0_first_jump:
+    call next_task
+    mov rsp, [rax]
+
+    ; mov rsi, rsp
+    ; call timer_callback
 
     ; PIC : End of innterrupt
 	mov al, 0x20

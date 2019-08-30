@@ -1,6 +1,7 @@
 #include <timer.h>
 #include <isr.h>
 #include <ports.h>
+#include <memory.h>
 #include <console.h>
 #include <x86.h>
 
@@ -21,7 +22,6 @@ uint64_t timer_tick() {
 
 void init_kernel_timer() {
     // register_interrupt_handler(IRQ0, timer_callback);
-
     int divisor = 1193180 / TIMER_HZ;
     outb(0x43, 0x36);
     outb(0x40, divisor & 0xff);

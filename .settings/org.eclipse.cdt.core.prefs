@@ -1,0 +1,6 @@
+eclipse.preferences.version=1
+environment/project/cdt.managedbuild.toolchain.gnu.cross.base.494272528/PATH/delimiter=\:
+environment/project/cdt.managedbuild.toolchain.gnu.cross.base.494272528/PATH/operation=replace
+environment/project/cdt.managedbuild.toolchain.gnu.cross.base.494272528/PATH/value=/bin\:/usr/bin\:/usr/sbin\:/sbin\:/opt/local/bin\:/usr/local/opt/gettext/bin\:/usr/local/Cellar/x86_64-none-elf/5.2.0/bin\:/usr/local/Celler/maven/3.6.1/bin\:/Users/zaharije.pasalic/Library/Android/sdk/tools/bin\:/Users/zaharije.pasalic/Library/Android/sdk/tools\:/Users/zaharije.pasalic/Library/Android/sdk/platform-tools\:/Users/zaharije.pasalic/.rbenv/shims\:/Users/zaharije.pasalic/.rbenv/bin\:/usr/local/bin\:/usr/bin\:/bin\:/usr/sbin\:/sbin\:/Users/zaharije.pasalic/src/build-grub/objconv\:/Users/zaharije.pasalic/opt/gnu-mcu-eclipse/qemu/2.8.0-6-20190517-1329/bin\:/Users/zaharije.pasalic/.ebcli-virtual-env/executables\:/Users/zaharije.pasalic/.local/bin\:/Users/zaharije.pasalic/.local/bin
+environment/project/cdt.managedbuild.toolchain.gnu.cross.base.494272528/append=true
+environment/project/cdt.managedbuild.toolchain.gnu.cross.base.494272528/appendContributed=true

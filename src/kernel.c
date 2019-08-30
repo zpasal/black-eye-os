@@ -53,55 +53,135 @@ void init_kernel_malloc() {
   kprintf("KHEAP: Kernel heap starts at: 0x%X\n", __kheap_start);
 }
 
-
-extern uint64_t __tick ;
-
-const char *__krnl_drive_type[] = { 
-  "no floppy drive", 
-  "360kb 5.25in floppy drive", 
-  "1.2mb 5.25in floppy drive", 
-  "720kb 3.5in", 
-  "1.44mb 3.5in", 
-  "2.88mb 3.5in"
-};
-
-
 typedef struct {
   uint64_t rsp;
-  int id;
-  uint8_t attrib;
-} task_t;
+  uint32_t id;
+  uint32_t attrib;
+}  __attribute__((packed)) task_t;
 
 
-
-task_t tasks[2];
+task_t tasks[3];
 #define TASK_STACK_SIZE 512
+uint8_t stack0[TASK_STACK_SIZE];
 uint8_t stack1[TASK_STACK_SIZE];
 uint8_t stack2[TASK_STACK_SIZE];
-task_t* current_task;
+int current_task_index;
 
-void task1() {
-  x86_cli();
-  *(CONSOLE_VIDEO_MEMORY+1) += 1;
-  x86_sti();
+__attribute__((naked)) void task1() {
+	while(1) {
+    *((char*)0xFFFF800000000000 + 0xE0000000) += 1;
+  	  *(CONSOLE_VIDEO_MEMORY+5) += 1;
+	}
 }
 
-void task2() {
-  x86_cli();
-  *(CONSOLE_VIDEO_MEMORY+3) += 1;
-  x86_sti();
+__attribute__((naked)) void task2() {
+	while(1) {
+		*(CONSOLE_VIDEO_MEMORY+3) += 1;
+	}
+}
+__attribute__((naked)) void task3() {
+	while(1) {
+		*(CONSOLE_VIDEO_MEMORY+7) += 1;
+	}
 }
 
-// void setup_task(task_t* task, void* stack_end) {
-//   uint64_t* rsp = (uint64_t*)stack_end;
-//   rsp--;
+void setup_task(task_t* task, void* stack_end, void* entry) {
+   uint64_t* rsp = (uint64_t*)stack_end;
+   rsp--;
+   uint64_t jump_rsp = (uint64_t)rsp;
+   /*
+		+------------+
+	+40 | %SS        |
+	+32 | %RSP       |
+	+24 | %RFLAGS    |
+	+16 | %CS        |
+	 +8 | %RIP       | <-- %RSP
+		+------------+
+    * */
+   *rsp-- = 0x0;	// SS
+   *rsp-- = jump_rsp; 		// RSP
+   *rsp-- = 0x286; 		// RFLAGS
+   *rsp-- = 0x08;		// CS
+   *rsp-- = (uint64_t)entry;
+   rsp -= 14; // rax,rbx,rcx,rdx,rsi,rdi,rbp,r8,r9,r10,r11,r12,r13,r14,r15 - switch.asm irq0
 
-// }
+   task->attrib = 0;
+   task->id = 0;
+   task->rsp = (uint64_t)rsp; //- switch will do it
+ }
 
+task_t* next_task() {
+	current_task_index++;
+	current_task_index = current_task_index % 3;
+
+	return &tasks[current_task_index];
+}
+
+task_t* current_task() {
+	return &tasks[current_task_index];
+}
+
+#define VBE_DISPI_INDEX_ID (0)
+#define VBE_DISPI_INDEX_XRES (1)
+#define VBE_DISPI_INDEX_YRES (2)
+#define VBE_DISPI_INDEX_BPP (3)
+#define VBE_DISPI_INDEX_ENABLE (4)
+#define VBE_DISPI_INDEX_BANK (5)
+#define VBE_DISPI_INDEX_VIRT_WIDTH (6)
+#define VBE_DISPI_INDEX_VIRT_HEIGHT (7)
+#define VBE_DISPI_INDEX_X_OFFSET (8)
+#define VBE_DISPI_INDEX_Y_OFFSET (9)
+#define VBE_DISPI_IOPORT_INDEX (0x01CE)
+#define VBE_DISPI_IOPORT_DATA (0x01CF)
+#define VBE_DISPI_DISABLED (0x00) 
+#define BE_DISPI_INDEX_ENABLE (4)
+#define VBE_DISPI_ENABLED (0x01) 
+#define VBE_DISPI_LFB_ENABLED (0x40)
+#define VBE_DISPI_NOCLEARMEM (0x80)
+
+void BgaWriteRegister(unsigned short IndexValue, unsigned short DataValue)
+{
+    outpw(VBE_DISPI_IOPORT_INDEX, IndexValue);
+    outpw(VBE_DISPI_IOPORT_DATA, DataValue);
+}
+ 
+unsigned short BgaReadRegister(unsigned short IndexValue)
+{
+    outpw(VBE_DISPI_IOPORT_INDEX, IndexValue);
+    return inpw(VBE_DISPI_IOPORT_DATA);
+}
+ 
+int BgaIsAvailable(void)
+{
+    return 1; //(BgaReadRegister(VBE_DISPI_INDEX_ID) == VBE_DISPI_ID4);
+}
+ 
+void BgaSetVideoMode(unsigned int Width, unsigned int Height, unsigned int BitDepth, int UseLinearFrameBuffer, int ClearVideoMemory)
+{
+    BgaWriteRegister(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_DISABLED);
+    BgaWriteRegister(VBE_DISPI_INDEX_XRES, Width);
+    BgaWriteRegister(VBE_DISPI_INDEX_YRES, Height);
+    BgaWriteRegister(VBE_DISPI_INDEX_BPP, BitDepth);
+    BgaWriteRegister(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_ENABLED |
+        (UseLinearFrameBuffer ? VBE_DISPI_LFB_ENABLED : 0) |
+        (ClearVideoMemory ? 0 : VBE_DISPI_NOCLEARMEM));
+}
+ 
+void BgaSetBank(unsigned short BankNumber)
+{
+    BgaWriteRegister(VBE_DISPI_INDEX_BANK, BankNumber);
+}
 
 void kmain(/*unsigned long magic, unsigned long addr*/) {
+
+  BgaSetVideoMode(1024, 768, 24, 1, 1);
+    *((char*)0xFFFF800000000000 + 0xE0000000) = 200;
+    *((char*)0xFFFF800000000000 + 0xE0000001) = 200;
+    *((char*)0xFFFF800000000000 + 0xE0000002) = 200;
+
   init_kernel_console();
   kprintf("\nBlackEye OS\n");
+  current_task_index = 0;
 
   init_kernel_isr();
   init_kernel_malloc();
@@ -109,26 +189,14 @@ void kmain(/*unsigned long magic, unsigned long addr*/) {
   init_kernel_keyboard();
   init_kernel_timer();
 
-  current_task = tasks;
-  
+  setup_task(&tasks[0], stack0 + TASK_STACK_SIZE - sizeof(uint64_t), task1);
+  tasks[0].id = 0;
+  setup_task(&tasks[1], stack1 + TASK_STACK_SIZE - sizeof(uint64_t), task2);
+  tasks[1].id = 1;
+  setup_task(&tasks[2], stack2 + TASK_STACK_SIZE - sizeof(uint64_t), task3);
+  tasks[2].id = 2;
 
-
-  timer_enable();
-
-  while(1) {
-    // x86_cli();
-
-    // __krnl_console.current_index = 0;
-    // kprintf("%i", __tick % 10000);
-    // x86_sti();
-  }
-
-  // if (multiboot_is_valid(magic, addr) == false) {
-  //   kprintf("invalid multiboot\n");
-  //   while(1) {}
-  // }
-  // multiboot_info_t *mbi = TO_VMA_PTR(multiboot_info_t*, addr);
-  // reserved_areas_t reserved = read_multiboot_info(mbi);
-  // kprintf("- multiboot_start = 0x%X, multiboot_end = 0x%X\n", reserved.multiboot_start, reserved.multiboot_end);
-  // kprintf("- kernel_start    = 0x%X, kernel_end    = 0x%X\n", reserved.kernel_start, reserved.kernel_end);
+  // Jump into task switcher and start first task - after this - kernel main will not continue
+  do_first_task_jump();
+  while(1) { }
 }

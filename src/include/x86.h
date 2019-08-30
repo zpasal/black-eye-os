@@ -92,4 +92,9 @@ static inline uint64_t x86_get_cr3(void) {
     return rv;
 }
 
+static inline void do_first_task_jump() {
+    __asm__ __volatile__ ("jmp irq0_first_jump");
+
+}
+
 #endif
