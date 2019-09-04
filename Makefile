@@ -11,7 +11,7 @@ kernel := build/kernel-$(arch).bin
 iso := build/black-eye-os-$(arch).iso
 linker_script := src/ldscripts/kernel.ld
 grub_cfg := src/grub/grub.cfg
-assembly_source_files := $(wildcard src/*.asm)
+assembly_source_files := $(wildcard src/drivers/*.asm) $(wildcard src/kernel/*.asm) $(wildcard src/lib/*.asm) $(wildcard src/x86_64/*.asm)
 assembly_object_files := $(patsubst src/%.asm, \
 	build/%.o, $(assembly_source_files))
 nasm_flags := -w-number-overflow -felf64
@@ -20,7 +20,7 @@ cflags := -fno-pic  -m64 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
 		  -ffreestanding -mno-red-zone -mno-mmx -mno-sse -mno-sse2 \
 	      -I $(c_include) -nostartfiles -nodefaultlibs -fno-exceptions \
 	      -Wall -Wextra -Werror -c -mcmodel=large
-c_source_files := $(wildcard src/*.c) $(wildcard src/lib/*.c)
+c_source_files := $(wildcard src/drivers/*.c) $(wildcard src/kernel/*.c) $(wildcard src/lib/*.c) $(wildcard src/x86_64/*.c)
 c_object_files := $(patsubst src/%.c, \
 	build/%.o, $(c_source_files))
 quemu_mem := 128

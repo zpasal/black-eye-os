@@ -69,8 +69,7 @@ int current_task_index;
 
 __attribute__((naked)) void task1() {
 	while(1) {
-    *((char*)0xFFFF800000000000 + 0xE0000000) += 1;
-  	  *(CONSOLE_VIDEO_MEMORY+5) += 1;
+  	  *(CONSOLE_VIDEO_MEMORY+1) += 1;
 	}
 }
 
@@ -81,7 +80,7 @@ __attribute__((naked)) void task2() {
 }
 __attribute__((naked)) void task3() {
 	while(1) {
-		*(CONSOLE_VIDEO_MEMORY+7) += 1;
+		*(CONSOLE_VIDEO_MEMORY+5) += 1;
 	}
 }
 
@@ -121,63 +120,9 @@ task_t* current_task() {
 	return &tasks[current_task_index];
 }
 
-#define VBE_DISPI_INDEX_ID (0)
-#define VBE_DISPI_INDEX_XRES (1)
-#define VBE_DISPI_INDEX_YRES (2)
-#define VBE_DISPI_INDEX_BPP (3)
-#define VBE_DISPI_INDEX_ENABLE (4)
-#define VBE_DISPI_INDEX_BANK (5)
-#define VBE_DISPI_INDEX_VIRT_WIDTH (6)
-#define VBE_DISPI_INDEX_VIRT_HEIGHT (7)
-#define VBE_DISPI_INDEX_X_OFFSET (8)
-#define VBE_DISPI_INDEX_Y_OFFSET (9)
-#define VBE_DISPI_IOPORT_INDEX (0x01CE)
-#define VBE_DISPI_IOPORT_DATA (0x01CF)
-#define VBE_DISPI_DISABLED (0x00) 
-#define BE_DISPI_INDEX_ENABLE (4)
-#define VBE_DISPI_ENABLED (0x01) 
-#define VBE_DISPI_LFB_ENABLED (0x40)
-#define VBE_DISPI_NOCLEARMEM (0x80)
-
-void BgaWriteRegister(unsigned short IndexValue, unsigned short DataValue)
-{
-    outpw(VBE_DISPI_IOPORT_INDEX, IndexValue);
-    outpw(VBE_DISPI_IOPORT_DATA, DataValue);
-}
- 
-unsigned short BgaReadRegister(unsigned short IndexValue)
-{
-    outpw(VBE_DISPI_IOPORT_INDEX, IndexValue);
-    return inpw(VBE_DISPI_IOPORT_DATA);
-}
- 
-int BgaIsAvailable(void)
-{
-    return 1; //(BgaReadRegister(VBE_DISPI_INDEX_ID) == VBE_DISPI_ID4);
-}
- 
-void BgaSetVideoMode(unsigned int Width, unsigned int Height, unsigned int BitDepth, int UseLinearFrameBuffer, int ClearVideoMemory)
-{
-    BgaWriteRegister(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_DISABLED);
-    BgaWriteRegister(VBE_DISPI_INDEX_XRES, Width);
-    BgaWriteRegister(VBE_DISPI_INDEX_YRES, Height);
-    BgaWriteRegister(VBE_DISPI_INDEX_BPP, BitDepth);
-    BgaWriteRegister(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_ENABLED |
-        (UseLinearFrameBuffer ? VBE_DISPI_LFB_ENABLED : 0) |
-        (ClearVideoMemory ? 0 : VBE_DISPI_NOCLEARMEM));
-}
- 
-void BgaSetBank(unsigned short BankNumber)
-{
-    BgaWriteRegister(VBE_DISPI_INDEX_BANK, BankNumber);
-}
-
 void kmain(/*unsigned long magic, unsigned long addr*/) {
 
-  BgaSetVideoMode(1024, 768, 24, 1, 1);
-    *((char*)0xFFFF800000000000 + 0xE0000000) = 200;
-    *((char*)0xFFFF800000000000 + 0xE0000001) = 200;
-    *((char*)0xFFFF800000000000 + 0xE0000002) = 200;
+  //BgaSetVideoMode(1024, 768, 24, 1, 1);
 
   init_kernel_console();
   kprintf("\nBlackEye OS\n");

@@ -1,7 +1,8 @@
 extern long_mode_start
 
 %define KERNEL_VMA          0xFFFF800000000000
-%define KERNEL_STACK_SIZE   4096*2
+%define PAGE_SIZE           4096
+%define KERNEL_STACK_SIZE   PAGE_SIZE*2
 
 section .text
 bits 32
@@ -28,7 +29,7 @@ start:
     lgdt [(gdt64.pointer - KERNEL_VMA)]
 
     ; jump to refresh RIP and new GDT
-    jmp gdt64.code:(long_mode_start - KERNEL_VMA)
+    jmp gdt64.kernel_code:(long_mode_start - KERNEL_VMA)
 
 
 ; Maps memory from 0x0000 -> 2MB and KERNEL_VMA ->2MB
@@ -96,6 +97,7 @@ enable_paging:
 
     ret
 
+
 section .data
 align 4096
 
@@ -115,30 +117,74 @@ global tmp_mem_bitmap
 tmp_mem_bitmap:
     times 512 dq 0 ; temporary mem table 1bit = 4K total of 128MB
 
+global tss64
+tss64:
+    dd 0
+    times 3 dq 0 ; RSPn
+    dq 0 ; Reserved
+interrupt_stack_table:
+    dq ist_stack_1 ; IST1, NMI
+    dq ist_stack_2 ; IST2, Double fault
+    dq 0 ; IST3
+    dq 0 ; IST4
+    dq 0 ; IST5
+    dq 0 ; IST6
+    dq 0 ; IST7
+    dq 0 ; Reserved
+    dw 0 ; Reserved
+    dw 0 ; I/O Map Base Address
+tss_size equ $ - tss64 - 1
+
+
 section .data
+extern gdt64
+extern gdt64.tss
 gdt64:                           ; Global Descriptor Table (64-bit).
-    .Null: equ $ - gdt64         ; The null descriptor.
-    dw 0xFFFF                    ; Limit (low).
+.null: equ $ - gdt64         ; The null descriptor.
+    dw 0                         ; Limit (low).
     dw 0                         ; Base (low).
     db 0                         ; Base (middle)
     db 0                         ; Access.
-    db 1                         ; Granularity.
+    db 0                         ; Granularity.
     db 0                         ; Base (high).
-    .code: equ $ - gdt64         ; The code descriptor.
+.kernel_code: equ $ - gdt64         ; The code descriptor.
     dw 0                         ; Limit (low).
     dw 0                         ; Base (low).
     db 0                         ; Base (middle)
-    db 10011010b                 ; Access (exec/read).
-    db 10101111b                 ; Granularity, 64 bits flag, limit19:16.
+    db 10011000b                 ; Present=1 + DPL=00 + S=1 (system segment) + Type=1000(Execute only)
+    db 00100000b                ; Granularity, 64 bits flag, limit19:16.
     db 0                         ; Base (high).
-    .data: equ $ - gdt64         ; The data descriptor.
+.kernel_data: equ $ - gdt64         ; The data descriptor.
     dw 0                         ; Limit (low).
     dw 0                         ; Base (low).
     db 0                         ; Base (middle)
-    db 10010010b                 ; Access (read/write).
+    db 10010010b                 ; Present=1 + DPL=00 + S=1 + Type=0010(Read/Write)
     db 00000000b                 ; Granularity.
     db 0                         ; Base (high).
-    .pointer:                    ; The GDT-pointer.
+.user_code: equ $ - gdt64         ; The code descriptor.
+    dw 0                         ; Limit (low).
+    dw 0                         ; Base (low).
+    db 0                         ; Base (middle)
+    db 11111000b                 ; Present=1 + DPL=00 + S=1 (system segment) + Type=1000(Execute only)
+    db 00100000b                ; Granularity, 64 bits flag, limit19:16.
+    db 0                         ; Base (high).
+.user_data: equ $ - gdt64         ; The data descriptor.
+    dw 0                         ; Limit (low).
+    dw 0                         ; Base (low).
+    db 0                         ; Base (middle)
+    db 11110010b                 ; Present=1 + DPL=00 + S=1 + Type=0010(Read/Write)
+    db 00000000b                 ; Granularity.
+    db 0                         ; Base (high).
+.tss equ $ - gdt64           ; The TSS descriptor
+    dw tss_size & 0xFFFF         ; Limit
+    dw 0                         ; Base (bytes 0-2)
+    db 0                         ; Base (byte 3)
+    db 10001001b                 ; Type, present
+    db 00000000b                 ; Misc
+    db 0                         ; Base (byte 4)
+    dd 0                         ; Base (bytes 5-8)
+    dd 0                         ; Zero / reserved
+.pointer:                    ; The GDT-pointer.
     dw $ - gdt64 - 1             ; Limit.
     dq gdt64                     ; Base.
 
@@ -149,6 +195,11 @@ kernel_stack_bottom:
     resb KERNEL_STACK_SIZE
 global kernel_stack_top
 kernel_stack_top:
+
+    resb PAGE_SIZE
+ist_stack_1:
+    resb PAGE_SIZE
+ist_stack_2:
 
 align 4096
 kernel_end:
