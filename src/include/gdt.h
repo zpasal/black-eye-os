@@ -1,5 +1,12 @@
-// #ifndef __GDT_H
-// #define __GDT_H
+#ifndef __GDT_H
+#define __GDT_H
+
+#define GDT_NULL 				0
+#define GDT_KERNEL_CODE 8
+#define GDT_KERNEL_DATA 16
+#define GDT_USER_CODE   24
+#define GDT_USER_DATA   32
+#define GDT_TSS         40  
 
 // // #define KERNEL_NULL_SEGMENT_INDEX 0x00
 // // #define KERNAL_GDT_SEGMENT_INDEX  0x08
@@ -62,4 +69,4 @@
 // void load_tss( TSS_t* tss_table )
 
 
-// #endif
+#endif

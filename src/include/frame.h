@@ -15,5 +15,6 @@ void set_frame(uint64_t frame_addr);
 void clear_frame(uint64_t frame_addr);
 uint32_t test_frame(uint64_t frame_addr);
 uint64_t find_first_frame();
+void map_used_frames();
 
 #endif

@@ -1,6 +1,7 @@
 #include <frame.h>
 #include <kernel.h>
 #include <kheap.h>
+#include <memory.h>
 
 bitset_t frame_bitset;
 
@@ -12,8 +13,9 @@ void init_kernel_frames() {
   bitset_init(&frame_bitset, 
     (uint32_t*)kmalloc(INDEX_FROM_BIT(nframes)), 
     memory_size / PAGE_SIZE);
-  kprintf("MMU FRAME: Table size %iKB\n", INDEX_FROM_BIT(frame_bitset.length) / 1024);
+  kprintf("MMU FRAME: Table size %iKB (%i)\n", INDEX_FROM_BIT(frame_bitset.length) / 1024, nframes);
   kprintf("MMU FRAME: Start 0x%X\n", frame_bitset.start);
+  map_used_frames();
 }
 
 void set_frame(uint64_t frame_addr) {
@@ -47,3 +49,18 @@ uint64_t find_first_frame() {
   }
   return EMPTY_FRAME;
 }
+
+void map_used_frames() {
+  // KRNL : from 1MB - KRNL_SIZE (- KRNL_VM)
+  // BIOS AREA : Lower 1MB (too match but for now)
+  uint64_t kernel_size = TO_PHYS_U64(__kheap_placement_address);
+  // Mark lower 1MB + Kernel size as used
+  kprintf("MMU FRAME: end of heap : %X  (pages=%i)\n", kernel_size, kernel_size / PAGE_SIZE);
+  for (uint64_t i=0; i<kernel_size / PAGE_SIZE; i++) {
+    set_frame(i * PAGE_SIZE);
+  }
+
+  // test it
+  kprintf("MMU FRAME: next page %X\n", find_first_frame());
+}
+

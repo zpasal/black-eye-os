@@ -5,15 +5,7 @@ extern next_task
 extern timer_callback
 extern current_task_index
 extern current_task
-
-
-
-; Must be in sync with task_t fro kernel.c
-struc task_t
-  .rsp 		resq 1
-  .id 		resd 1
-  .attrib 	resd 1
-endstruc
+extern __switch_to
 
 global irq0
 global irq0_first_jump
@@ -43,6 +35,8 @@ irq0:
 irq0_first_jump:
     call next_task
     mov rsp, [rax]
+
+    call __switch_to
 
     ; mov rsi, rsp
     ; call timer_callback

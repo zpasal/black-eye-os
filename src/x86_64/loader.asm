@@ -200,9 +200,3 @@ kernel_stack_top:
 ist_stack_1:
     resb PAGE_SIZE
 ist_stack_2:
-
-align 4096
-kernel_end:
-    resb 4096
-global kernel_end
-

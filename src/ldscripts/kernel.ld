@@ -45,4 +45,7 @@ SECTIONS
       /* Exception handling section - we do not need it*/
       *(.eh_frame)
     }
+
+    kernel_end = ALIGN(4K);
+
 }

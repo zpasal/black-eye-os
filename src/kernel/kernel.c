@@ -15,6 +15,7 @@
 #include <keyboard.h>
 #include <frame.h>
 #include <timer.h>
+#include <process.h>
 
 #define __UNUSED__ __attribute__((unused))
 
@@ -53,11 +54,6 @@ void init_kernel_malloc() {
   kprintf("KHEAP: Kernel heap starts at: 0x%X\n", __kheap_start);
 }
 
-typedef struct {
-  uint64_t rsp;
-  uint32_t id;
-  uint32_t attrib;
-}  __attribute__((packed)) task_t;
 
 
 task_t tasks[3];
@@ -119,6 +115,13 @@ task_t* next_task() {
 task_t* current_task() {
 	return &tasks[current_task_index];
 }
+
+
+void __switch_to() {
+  // task_t* current =  current_task();
+  
+}
+
 
 void kmain(/*unsigned long magic, unsigned long addr*/) {
 

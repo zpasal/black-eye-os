@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-extern uint64_t kernel_end;
+extern void* kernel_end;
 
 extern uint64_t __kheap_start;
 extern uint64_t __kheap_placement_address;
