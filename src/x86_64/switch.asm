@@ -7,10 +7,10 @@ extern current_task_index
 extern current_task
 extern __switch_to
 
-global irq0
+global isr_stub_32
 global irq0_first_jump
 
-irq0:
+isr_stub_32:
     cli
     push rax
     push rbx
@@ -60,5 +60,5 @@ irq0_first_jump:
     pop rcx
     pop rbx
     pop rax
-    ;sti
+    sti
     iretq

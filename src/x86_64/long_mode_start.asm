@@ -34,19 +34,19 @@ flush_rip:
     mov rsp, kernel_stack_top
 
     ; enable 64bit TSS
-    mov rdi, gdt64
-    add rdi, gdt64.tss
-    mov rax, tss64
-    mov word [rdi + 2], ax
-    shr rax, 16
-    mov byte [rdi + 4], al
-    shr rax, 8
-    mov byte [rdi + 7], al
-    shr rax, 8
-    mov dword [rdi + 8], eax
+    ; mov rdi, gdt64
+    ; add rdi, gdt64.tss
+    ; mov rax, tss64
+    ; mov word [rdi + 2], ax
+    ; shr rax, 16
+    ; mov byte [rdi + 4], al
+    ; shr rax, 8
+    ; mov byte [rdi + 7], al
+    ; shr rax, 8
+    ; mov dword [rdi + 8], eax
 
-    mov ax, GDT_TSS
-    ltr ax
+    ; mov ax, GDT_TSS
+    ; ltr ax
 
     ; GRUB stores a pointer to a struct in the register ebx that,
     ; among other things, describes at which addresses the modules are loaded.

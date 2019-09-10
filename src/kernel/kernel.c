@@ -160,9 +160,7 @@ void kmain(/*unsigned long magic, unsigned long addr*/) {
   tasks[2].id = 2;
 
   // Jump into task switcher and start first task - after this - kernel main will not continue
-  // do_first_task_jump();
-
-  __asm__ __volatile__("int $19");
+  do_first_task_jump();
 
   while(1) { }
 }

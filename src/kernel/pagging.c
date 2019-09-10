@@ -7,6 +7,7 @@
 #include <kheap.h>
 #include <bitset.h>
 #include <x86.h>
+#include <isr.h>
 
 bitset_t frame_bitset;
 
@@ -137,7 +138,7 @@ void init_kernel_pagging() {
   memset(&pdpe, 0, sizeof(pdpe_t) * 512);
   memset(&pde, 0, sizeof(pde_t) * 512);
 
-  // pml4e[0].all = TO_PHYS_U64(&pdpe) | 3;     // 0 mem    : Presetn + Write
+  pml4e[0].all = TO_PHYS_U64(&pdpe) | 3;     // 0 mem    : Presetn + Write
   pml4e[0x100].all = TO_PHYS_U64(&pdpe) | 3; // KERNEL_VMA: Presetn + Write
   pdpe[0].all = TO_PHYS_U64(&pde) | 3; 
 
@@ -145,13 +146,16 @@ void init_kernel_pagging() {
     pde[i].all = (i * PAGE_SIZE) | 0x83; // Presetn + Write + Large (2MB)
   }
 
+  new_cr3 = TO_PHYS_U64(pml4e);
+
+  kprintf("MMU FRAME: P4: 0x%X\n", new_cr3);
   kprintf("MMU FRAME: P4[0]: 0x%X\n", pml4e[0].all);
   kprintf("MMU FRAME: P4[0x100]: 0x%X\n", pml4e[0x100].all);
   kprintf("MMU FRAME: P3: 0x%X\n", pdpe[0].all);
   kprintf("MMU FRAME: P2: 0x%X\n", pde[0].all);
-  new_cr3 = TO_PHYS_U64(pml4e);
-  __asm__ __volatile__("mov %0, %%cr3":: "r"(new_cr3));
-  // x86_write_cr3(TO_PHYS_U64(pml4e));
+  // __asm__ __volatile__("mov %0, %%cr3":: "r"(new_cr3));
+  x86_write_cr3(TO_PHYS_U64(pml4e));
+  set_idt();
 
 
   uint64_t memory_size = 128 * 1024 * 1024; // 128Megs for now - TODO : autodetect

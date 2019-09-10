@@ -121,8 +121,8 @@ tss_size equ $ - tss64 - 1
 
 
 section .data
-extern gdt64
-extern gdt64.tss
+global gdt64
+global gdt64.tss
 gdt64:                           ; Global Descriptor Table (64-bit).
 .null: equ $ - gdt64         ; The null descriptor.
     dw 0                         ; Limit (low).
@@ -159,15 +159,15 @@ gdt64:                           ; Global Descriptor Table (64-bit).
     db 11110010b                 ; Present=1 + DPL=00 + S=1 + Type=0010(Read/Write)
     db 00000000b                 ; Granularity.
     db 0                         ; Base (high).
-.tss equ $ - gdt64           ; The TSS descriptor
-    dw tss_size & 0xFFFF         ; Limit
-    dw 0                         ; Base (bytes 0-2)
-    db 0                         ; Base (byte 3)
-    db 10001001b                 ; Type, present
-    db 00000000b                 ; Misc
-    db 0                         ; Base (byte 4)
-    dd 0                         ; Base (bytes 5-8)
-    dd 0                         ; Zero / reserved
+; .tss equ $ - gdt64           ; The TSS descriptor
+;     dw tss_size & 0xFFFF         ; Limit
+;     dw 0                         ; Base (bytes 0-2)
+;     db 0                         ; Base (byte 3)
+;     db 10001001b                 ; Type, present
+;     db 00000000b                 ; Misc
+;     db 0                         ; Base (byte 4)
+;     dd 0                         ; Base (bytes 5-8)
+;     dd 0                         ; Zero / reserved
 .pointer:                    ; The GDT-pointer.
     dw $ - gdt64 - 1             ; Limit.
     dq gdt64                     ; Base.
