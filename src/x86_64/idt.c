@@ -27,3 +27,4 @@ void set_idt() {
     idt_reg.length = IDT_ENTRIES * sizeof(idt_gate_t) - 1;
     __asm__("lidt %0" : : "m"(idt_reg));
 }
+

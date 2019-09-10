@@ -8,6 +8,7 @@
 
 stack_t* get_stack(uint64_t id, uint64_t stack);
 void breakpoint_handler(stack_t *stack);
+void example_i19(stack_t *stack);
 
 isr_t interrupt_handlers[256];
 const char* exception_messages[] = {
@@ -117,9 +118,28 @@ void init_kernel_isr()
     // handlers for isr exceptions
     register_interrupt_handler(EXCEPTION_BP, breakpoint_handler);
 
+    register_interrupt_handler(19, example_i19);
+
+
     kputs("ISR: Setting IDT");
     set_idt();
     kputs("ISR: enabling interrupts");
+}
+
+void example_i19(stack_t *stack) {
+    kprintf(
+        "Exception: INT 19\n"
+        "  instruction_pointer = 0x%X\n"
+        "  code_segment        = 0x%X\n"
+        "  cpu_flags           = 0x%X\n"
+        "  stack_pointer       = 0x%X\n"
+        "  stack_segment       = 0x%X\n",
+        stack->instruction_pointer,
+        stack->code_segment,
+        stack->cpu_flags,
+        stack->stack_pointer,
+        stack->stack_segment
+    );
 }
 
 void isr_handler(uint64_t id, uint64_t stack_addr)

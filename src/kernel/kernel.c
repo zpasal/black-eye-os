@@ -13,9 +13,9 @@
 #include <isr.h>
 #include <timer.h>
 #include <keyboard.h>
-#include <frame.h>
 #include <timer.h>
 #include <process.h>
+#include <pagging.h>
 
 #define __UNUSED__ __attribute__((unused))
 
@@ -93,16 +93,31 @@ void setup_task(task_t* task, void* stack_end, void* entry) {
 	 +8 | %RIP       | <-- %RSP
 		+------------+
     * */
-   *rsp-- = 0x0;	// SS
+   *rsp-- = 0x10;	// SS
    *rsp-- = jump_rsp; 		// RSP
    *rsp-- = 0x286; 		// RFLAGS
    *rsp-- = 0x08;		// CS
    *rsp-- = (uint64_t)entry;
-   rsp -= 14; // rax,rbx,rcx,rdx,rsi,rdi,rbp,r8,r9,r10,r11,r12,r13,r14,r15 - switch.asm irq0
+   *rsp-- = 1;
+   *rsp-- = 2;
+   *rsp-- = 3;
+   *rsp-- = 4;
+   *rsp-- = 5;
+   *rsp-- = 6;
+   *rsp-- = 7;
+   *rsp-- = 8;
+   *rsp-- = 9;
+   *rsp-- = 10;
+   *rsp-- = 11;
+   *rsp-- = 12;
+   *rsp-- = 13;
+   *rsp-- = 14;
+   *rsp-- = 15;
+   // rsp -= 14; // rax,rbx,rcx,rdx,rsi,rdi,rbp,r8,r9,r10,r11,r12,r13,r14,r15 - switch.asm irq0
 
    task->attrib = 0;
    task->id = 0;
-   task->rsp = (uint64_t)rsp; //- switch will do it
+   task->rsp = (uint64_t)(rsp+1); //- switch will do it
  }
 
 task_t* next_task() {
@@ -131,9 +146,9 @@ void kmain(/*unsigned long magic, unsigned long addr*/) {
   kprintf("\nBlackEye OS\n");
   current_task_index = 0;
 
-  init_kernel_isr();
   init_kernel_malloc();
-  init_kernel_frames();
+  init_kernel_pagging();
+  init_kernel_isr();
   init_kernel_keyboard();
   init_kernel_timer();
 
@@ -145,6 +160,9 @@ void kmain(/*unsigned long magic, unsigned long addr*/) {
   tasks[2].id = 2;
 
   // Jump into task switcher and start first task - after this - kernel main will not continue
-  do_first_task_jump();
+  // do_first_task_jump();
+
+  __asm__ __volatile__("int $19");
+
   while(1) { }
 }

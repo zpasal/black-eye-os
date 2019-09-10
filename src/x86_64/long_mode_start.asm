@@ -16,6 +16,9 @@ extern tss64
 section .text
 bits 64
 long_mode_start:
+    mov rax, flush_rip ; just flush RIP with KERNEL_VMA address (not zero based)
+    jmp rax
+flush_rip:
     ; load 0 into all data segment registers
     cli
 
@@ -50,3 +53,4 @@ long_mode_start:
     ; Push ebx on the stack before calling main to make it an argument for main.
     call kmain
     hlt
+

@@ -31,52 +31,39 @@ start:
     ; jump to refresh RIP and new GDT
     jmp gdt64.kernel_code:(long_mode_start - KERNEL_VMA)
 
-
 ; Maps memory from 0x0000 -> 2MB and KERNEL_VMA ->2MB
 set_up_page_tables:
     ; map 0th P4 entry to P3 table
-    mov eax, (pdpe_table - KERNEL_VMA)
+    mov eax, (p3_table - KERNEL_VMA)
     or eax, 0b11 ; present + writable
-    mov [(pml4e_table - KERNEL_VMA)], eax
+    mov [(p4_table - KERNEL_VMA)], eax
 
     ; and 0x100th to KERNEL_VMA
     mov ecx, 0x100
-    mov [(pml4e_table - KERNEL_VMA) + ecx * 8], eax
-
-    ; and 511 (last) to itself (recursive mappings : see paging.c)
-    mov eax, (pml4e_table - KERNEL_VMA)
-    or eax, 0b11
-    mov ecx, 511
-    mov [(pml4e_table - KERNEL_VMA) + ecx * 8], eax
+    mov [(p4_table - KERNEL_VMA) + ecx * 8], eax
 
     ; map first P3 entry to P2 table
-    mov eax, (pde_table - KERNEL_VMA)
+    mov eax, (p2_table - KERNEL_VMA)
     or eax, 0b11 ; present + writable
-    mov [(pdpe_table - KERNEL_VMA)], eax
+    mov [(p3_table - KERNEL_VMA)], eax
 
-    ; map first P2 entry to P1 table
-    mov eax, (pte_table - KERNEL_VMA)
-    or eax, 0b11 ; present + writable
-    mov [(pde_table - KERNEL_VMA)], eax
-
-    ; coutner or 4K tables
+    ; coutner or 2MB tables
     mov ecx, 0
-.map_pte_table:
-    ; map ecx-th P2 entry to a huge page that starts at address 2MiB*ecx
-    mov eax, 4096      ; 4K page
+.map_p2_table:
+    mov eax, 0x200000      ; 2MB page
     mul ecx            ; start address of ecx-th page
-    or eax, 0b00000011 ; writable(0x02) present (0x01)
-    mov [(pte_table - KERNEL_VMA) + ecx * 8], eax ; map ecx-th entry
+    or eax, 0b10000011 ; present + writable + huge
+    mov [(p2_table - KERNEL_VMA) + ecx * 8], eax ; map ecx-th entry
 
     inc ecx            ; increase counter
     cmp ecx, 512       ; if counter == 512, the whole P2 table is mapped
-    jne .map_pte_table  ; else map the next entry
+    jne .map_p2_table  ; else map the next entry
 
     ret
 
 enable_paging:
     ; load P4 to cr3 register (cpu uses this to access the P4 table)
-    mov eax, (pml4e_table - KERNEL_VMA)
+    mov eax, (p4_table - KERNEL_VMA)
     mov cr3, eax
 
     ; enable Physical Address Extension (PAE-flag) in cr4
@@ -101,18 +88,15 @@ enable_paging:
 section .data
 align 4096
 
-global pml4e_table
-pml4e_table:
-    times 512 dq 0 ; 0 temporary to pdpe, 0x100 points to pdpe_table, last points to itself
-global pdpe_table
-pdpe_table:
-    times 512 dq 0 ; 0th point to pde_table
-global pde_table
-pde_table: 
-    times 512 dq 0 ; 0th points to pte_table
-global pte_table
-pte_table:
-    times 512 dq 0 ; points incrementaly to all 4k pages
+global p4_table
+p4_table:
+    times 512 dq 0 ; 0 temporary to p3_table
+global p3_table
+p3_table:
+    times 512 dq 0 ; 0th point to p2_table
+global p2_table
+p2_table: 
+    times 512 dq 0 ; 0th points to page
 global tmp_mem_bitmap
 tmp_mem_bitmap:
     times 512 dq 0 ; temporary mem table 1bit = 4K total of 128MB
@@ -152,7 +136,7 @@ gdt64:                           ; Global Descriptor Table (64-bit).
     dw 0                         ; Base (low).
     db 0                         ; Base (middle)
     db 10011000b                 ; Present=1 + DPL=00 + S=1 (system segment) + Type=1000(Execute only)
-    db 00100000b                ; Granularity, 64 bits flag, limit19:16.
+    db 00100000b                 ; Granularity, 64 bits flag, limit19:16.
     db 0                         ; Base (high).
 .kernel_data: equ $ - gdt64         ; The data descriptor.
     dw 0                         ; Limit (low).
@@ -188,14 +172,12 @@ gdt64:                           ; Global Descriptor Table (64-bit).
     dw $ - gdt64 - 1             ; Limit.
     dq gdt64                     ; Base.
 
-
 section .bss
 align 4
 kernel_stack_bottom:
     resb KERNEL_STACK_SIZE
 global kernel_stack_top
 kernel_stack_top:
-
     resb PAGE_SIZE
 ist_stack_1:
     resb PAGE_SIZE

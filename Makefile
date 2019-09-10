@@ -34,7 +34,7 @@ clean:
 	@rm -r build
 
 run: $(iso)
-	$(qemu) -cdrom $(iso) -m $(quemu_mem) -drive file=$(floppy_image),if=floppy,format=raw -boot order=d 
+	$(qemu) -cdrom $(iso) -m $(quemu_mem) -drive file=$(floppy_image),if=floppy,format=raw -boot order=d  
 
 run-bocsh: $(iso)
 	$(bochs) -f bochsrc.txt -q

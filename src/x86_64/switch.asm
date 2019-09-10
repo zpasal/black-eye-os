@@ -36,7 +36,7 @@ irq0_first_jump:
     call next_task
     mov rsp, [rax]
 
-    call __switch_to
+    ; call __switch_to
 
     ; mov rsi, rsp
     ; call timer_callback
@@ -60,5 +60,5 @@ irq0_first_jump:
     pop rcx
     pop rbx
     pop rax
-    sti
+    ;sti
     iretq
