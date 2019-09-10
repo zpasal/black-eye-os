@@ -125,7 +125,6 @@ static inline void bitset_init(bitset_t* bitset, uint64_t size) {
   memset(bitset->frames, 0, INDEX_FROM_BIT(bitset->nframes));
 }
 
-uint64_t new_cr3;
 pml4e_t pml4e[512] __attribute__((aligned(4096)));
 pdpe_t  pdpe[512] __attribute__((aligned(4096)));
 pde_t   pde[512] __attribute__((aligned(4096)));
@@ -138,7 +137,7 @@ void init_kernel_pagging() {
   memset(&pdpe, 0, sizeof(pdpe_t) * 512);
   memset(&pde, 0, sizeof(pde_t) * 512);
 
-  pml4e[0].all = TO_PHYS_U64(&pdpe) | 3;     // 0 mem    : Presetn + Write
+  // pml4e[0].all = TO_PHYS_U64(&pdpe) | 3;     // 0 mem    : Presetn + Write
   pml4e[0x100].all = TO_PHYS_U64(&pdpe) | 3; // KERNEL_VMA: Presetn + Write
   pdpe[0].all = TO_PHYS_U64(&pde) | 3; 
 
@@ -146,32 +145,31 @@ void init_kernel_pagging() {
     pde[i].all = (i * PAGE_SIZE) | 0x83; // Presetn + Write + Large (2MB)
   }
 
-  new_cr3 = TO_PHYS_U64(pml4e);
 
-  kprintf("MMU FRAME: P4: 0x%X\n", new_cr3);
+  kprintf("MMU FRAME: P4: 0x%X\n", TO_PHYS_U64(pml4e));
   kprintf("MMU FRAME: P4[0]: 0x%X\n", pml4e[0].all);
   kprintf("MMU FRAME: P4[0x100]: 0x%X\n", pml4e[0x100].all);
   kprintf("MMU FRAME: P3: 0x%X\n", pdpe[0].all);
   kprintf("MMU FRAME: P2: 0x%X\n", pde[0].all);
   // __asm__ __volatile__("mov %0, %%cr3":: "r"(new_cr3));
   x86_write_cr3(TO_PHYS_U64(pml4e));
-  set_idt();
+  // set_idt();
 
 
-  uint64_t memory_size = 128 * 1024 * 1024; // 128Megs for now - TODO : autodetect
+  // uint64_t memory_size = 128 * 1024 * 1024; // 128Megs for now - TODO : autodetect
 
-  bitset_init(&frame_bitset, memory_size / PAGE_SIZE);
-  kprintf("MMU FRAME: Bitset used mem: %i\n", INDEX_FROM_BIT(frame_bitset.nframes));
+  // bitset_init(&frame_bitset, memory_size / PAGE_SIZE);
+  // kprintf("MMU FRAME: Bitset used mem: %i\n", INDEX_FROM_BIT(frame_bitset.nframes));
 
-  // mark used memory
-  // Dummy way : mark everything from 0x0000 - KERNEL_END
-  uint64_t kernel_end_p = TO_PHYS_U64(__kheap_placement_address);
-  uint64_t num_pages = kernel_end_p / PAGE_SIZE + 1;
-  kprintf("MMU FRAME: End of kernel mem: 0x%X PAGES=%i\n", kernel_end_p, num_pages);
+  // // mark used memory
+  // // Dummy way : mark everything from 0x0000 - KERNEL_END
+  // uint64_t kernel_end_p = TO_PHYS_U64(__kheap_placement_address);
+  // uint64_t num_pages = kernel_end_p / PAGE_SIZE + 1;
+  // kprintf("MMU FRAME: End of kernel mem: 0x%X PAGES=%i\n", kernel_end_p, num_pages);
 
-  for (uint64_t i=0; i<num_pages; i++) {
-    bitset_set(&frame_bitset, i * PAGE_SIZE);
-  }
-  uint64_t testaddr = bitset_find_first(&frame_bitset);
-  kprintf("MMU FRAME: New page: 0x%X\n", testaddr);
+  // for (uint64_t i=0; i<num_pages; i++) {
+  //   bitset_set(&frame_bitset, i * PAGE_SIZE);
+  // }
+  // uint64_t testaddr = bitset_find_first(&frame_bitset);
+  // kprintf("MMU FRAME: New page: 0x%X\n", testaddr);
 }
