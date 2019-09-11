@@ -54,70 +54,53 @@ void init_kernel_malloc() {
   kprintf("KHEAP: Kernel heap starts at: 0x%X\n", __kheap_start);
 }
 
-
-
 task_t tasks[3];
 #define TASK_STACK_SIZE 512
-uint8_t stack0[TASK_STACK_SIZE];
-uint8_t stack1[TASK_STACK_SIZE];
-uint8_t stack2[TASK_STACK_SIZE];
 int current_task_index;
 
-__attribute__((naked)) void task1() {
-	while(1) {
-  	  *(CONSOLE_VIDEO_MEMORY+1) += 1;
-	}
-}
+#include <../apps/dummy_array.c>
 
-__attribute__((naked)) void task2() {
-	while(1) {
-		*(CONSOLE_VIDEO_MEMORY+3) += 1;
-	}
-}
-__attribute__((naked)) void task3() {
-	while(1) {
-		*(CONSOLE_VIDEO_MEMORY+5) += 1;
-	}
-}
+void setup_task(task_t* task, void* app_data, uint32_t app_size) {
 
-void setup_task(task_t* task, void* stack_end, void* entry) {
-   uint64_t* rsp = (uint64_t*)stack_end;
-   rsp--;
-   uint64_t jump_rsp = (uint64_t)rsp;
-   /*
-		+------------+
-	+40 | %SS        |
-	+32 | %RSP       |
-	+24 | %RFLAGS    |
-	+16 | %CS        |
-	 +8 | %RIP       | <-- %RSP
-		+------------+
-    * */
-   *rsp-- = 0x10;	// SS
-   *rsp-- = jump_rsp; 		// RSP
-   *rsp-- = 0x286; 		// RFLAGS
-   *rsp-- = 0x08;		// CS
-   *rsp-- = (uint64_t)entry;
-   *rsp-- = 1;
-   *rsp-- = 2;
-   *rsp-- = 3;
-   *rsp-- = 4;
-   *rsp-- = 5;
-   *rsp-- = 6;
-   *rsp-- = 7;
-   *rsp-- = 8;
-   *rsp-- = 9;
-   *rsp-- = 10;
-   *rsp-- = 11;
-   *rsp-- = 12;
-   *rsp-- = 13;
-   *rsp-- = 14;
-   *rsp-- = 15;
-   // rsp -= 14; // rax,rbx,rcx,rdx,rsi,rdi,rbp,r8,r9,r10,r11,r12,r13,r14,r15 - switch.asm irq0
+  // setup task MMU
+  uint8_t* task_memory = kmalloc_aligned(PAGE_SIZE);
+  memcpy(task_memory, app_data, app_size);
+  uint64_t* rsp = (uint64_t*)task_memory;
+  rsp--;
+  /*
+  +------------+
+  +40 | %SS        |
+  +32 | %RSP       |
+  +24 | %RFLAGS    |
+  +16 | %CS        |
+  +8 | %RIP       | <-- %RSP
+  +------------+
+  * */
+  *rsp-- = 0x10;	             // SS
+  *rsp-- = 0x200000 - 8; 		   // RSP  2MB - 8
+  *rsp-- = 0x286; 		         // RFLAGS
+  *rsp-- = 0x08;		           // CS
+  *rsp-- = 0x0000000000000000; // entry point is always 0
+  *rsp-- = 1;
+  *rsp-- = 2;
+  *rsp-- = 3;
+  *rsp-- = 4;
+  *rsp-- = 5;
+  *rsp-- = 6;
+  *rsp-- = 7;
+  *rsp-- = 8;
+  *rsp-- = 9;
+  *rsp-- = 10;
+  *rsp-- = 11;
+  *rsp-- = 12;
+  *rsp-- = 13;
+  *rsp-- = 14;
+  *rsp-- = 15;
+  // rsp -= 14; // rax,rbx,rcx,rdx,rsi,rdi,rbp,r8,r9,r10,r11,r12,r13,r14,r15 - switch.asm irq0
 
-   task->attrib = 0;
-   task->id = 0;
-   task->rsp = (uint64_t)(rsp+1); //- switch will do it
+  task->rsp = (uint64_t)(rsp+1); //- switch will do it
+
+  task->pde.all = TO_PHYS_U64(task_memory) | 0x87; // Present + Write + CPL3
  }
 
 task_t* next_task() {
@@ -131,12 +114,11 @@ task_t* current_task() {
 	return &tasks[current_task_index];
 }
 
-
-void __switch_to() {
-  // task_t* current =  current_task();
-  
+void __switch_to(task_t* next __UNUSED__) {
+  pde_user[0] = next->pde;
+  // x86_set_cr3(TO_PHYS_U64(pml4e));
+  x86_tlb_flush_all();
 }
-
 
 void kmain(/*unsigned long magic, unsigned long addr*/) {
 
@@ -152,12 +134,9 @@ void kmain(/*unsigned long magic, unsigned long addr*/) {
   init_kernel_keyboard();
   init_kernel_timer();
 
-  setup_task(&tasks[0], stack0 + TASK_STACK_SIZE - sizeof(uint64_t), task1);
-  tasks[0].id = 0;
-  setup_task(&tasks[1], stack1 + TASK_STACK_SIZE - sizeof(uint64_t), task2);
-  tasks[1].id = 1;
-  setup_task(&tasks[2], stack2 + TASK_STACK_SIZE - sizeof(uint64_t), task3);
-  tasks[2].id = 2;
+  setup_task(&tasks[0], dummy_app, dummy_app_len);
+  setup_task(&tasks[1], dummy_app, dummy_app_len);
+  setup_task(&tasks[2], dummy_app, dummy_app_len);
 
   // Jump into task switcher and start first task - after this - kernel main will not continue
   do_first_task_jump();

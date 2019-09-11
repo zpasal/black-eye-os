@@ -31,12 +31,12 @@ isr_stub_32:
     ; Store rsp of current task
     call current_task
     mov [rax], rsp
-
 irq0_first_jump:
     call next_task
     mov rsp, [rax]
 
-    ; call __switch_to
+    mov rdi, rax
+    call __switch_to
 
     ; mov rsi, rsp
     ; call timer_callback

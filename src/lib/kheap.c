@@ -13,10 +13,10 @@ void init_kmalloc() {
 
 uint64_t _kmalloc(uint64_t sz, bool align, uint64_t *phys) {
   // If the address is not already page-aligned
-  if (align && (__kheap_placement_address & 0xFFFFF000)) {
+  if (align && (__kheap_placement_address & 0xFFFFFFFFFFE00000)) {
     // Align it.
-    __kheap_placement_address &= 0xFFFFF000;
-    __kheap_placement_address += 0x1000;
+    __kheap_placement_address &= 0xFFFFFFFFFFE00000;
+    __kheap_placement_address += 0x200000;
   }
   if (phys) {
     *phys = TO_PHYS_U64(__kheap_placement_address);

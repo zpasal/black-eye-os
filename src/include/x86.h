@@ -92,7 +92,7 @@ static inline uint64_t x86_get_cr3(void) {
     return rv;
 }
 
-static inline void x86_write_cr3(uint64_t cr3)
+static inline void x86_set_cr3(uint64_t cr3)
 {
   asm volatile (
     "mov %0, %%cr3"
@@ -102,9 +102,20 @@ static inline void x86_write_cr3(uint64_t cr3)
   );
 }
 
+static inline void x86_invlpg(void* addr) {
+    /* Clobber memory to avoid optimizer re-ordering access before invlpg, which may cause nasty bugs. */
+  asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
+}
+
+static inline void x86_tlb_flush_all(void)
+{
+  x86_set_cr3(x86_get_cr3());
+}
+
+
 static inline void do_first_task_jump() {
     __asm__ __volatile__ ("jmp irq0_first_jump");
-
 }
+
 
 #endif
