@@ -8,6 +8,7 @@ bits 64
 %macro isr_stub_err 1
 global isr_stub_%1
 isr_stub_%1:
+    cli
     ; Store the interrupt number in the highest four bytes of the error code
     ; This way we can always increment rsp by 8 before iretq and no memory is wasted.
     mov dword [rsp + 4], %1
@@ -17,6 +18,7 @@ isr_stub_%1:
 %macro isr_stub_noerr 1
 global isr_stub_%1
 isr_stub_%1:
+    cli
     ; For consistency with the err variant
     push qword 0
     mov dword [rsp + 4], %1
@@ -26,6 +28,7 @@ isr_stub_%1:
 %macro isr_stub_irq 1
 global isr_stub_%1
 isr_stub_%1:
+    cli
     push qword %1
     jmp isr_common_stub
 %endmacro
@@ -40,6 +43,7 @@ isr_stub_%1:
 %macro isr_stub_ipi 2
 global isr_stub_%1
 isr_stub_%1:
+    cli
     push qword %1
     jmp isr_common_stub
 %endmacro

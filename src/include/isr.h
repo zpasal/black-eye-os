@@ -72,19 +72,41 @@ extern void isr_stub_34();
 extern void isr_stub_35();
 extern void isr_stub_36();
 
-typedef struct stack {
-    uint64_t instruction_pointer;
-    uint64_t code_segment;
-    uint64_t cpu_flags;
-    uint64_t stack_pointer;
-    uint64_t stack_segment;
-} __attribute__((packed)) stack_t;
+struct isr_ctx_struct {
+	uint64_t r15;
+	uint64_t r14;
+	uint64_t r13;
+	uint64_t r12;
+	uint64_t r11;
+	uint64_t r10;
+	uint64_t r9;
+	uint64_t r8;
+	uint64_t rbp;
+	uint64_t rdi;
+	uint64_t rsi;
+	uint64_t rdx;
+	uint64_t rcx;
+	uint64_t rbx;
+	uint64_t rax;
 
-typedef void (*isr_t) (stack_t *stack);
+	// Contains error code and interrupt number for exceptions
+	// Contains syscall number for syscalls
+	// Contains just the interrupt number otherwise
+	uint32_t error_code;
+	uint32_t int_no;
+	// Interrupt stack frame
+	uint64_t rip;
+	uint64_t cs;
+	uint64_t rflags;
+	uint64_t rsp;
+	uint64_t ss;
+};
+typedef struct isr_ctx_struct isr_ctx_t;
+
+
+typedef void (*isr_t)(isr_ctx_t *regs);
 
 void init_kernel_isr();
-void isr_handler(uint64_t id, uint64_t stack) __asm__("isr_handler");
-void irq_handler(uint64_t id, uint64_t stack) __asm__("irq_handler");
 void register_interrupt_handler(uint64_t id, isr_t handler);
 
 #endif

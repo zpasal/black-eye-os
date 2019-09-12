@@ -6,9 +6,8 @@
 
 #define NB_REGISTERS_PUSHED_BEFORE_CALL 15
 
-stack_t* get_stack(uint64_t id, uint64_t stack);
-void breakpoint_handler(stack_t *stack);
-void example_i19(stack_t *stack);
+static void page_fault_handler(isr_ctx_t *regs);
+
 
 isr_t interrupt_handlers[256];
 const char* exception_messages[] = {
@@ -115,122 +114,64 @@ void init_kernel_isr()
     set_idt_gate(IRQ3, (uint64_t) isr_stub_35);
     set_idt_gate(IRQ4, (uint64_t) isr_stub_36);
 
-    // handlers for isr exceptions
-    register_interrupt_handler(EXCEPTION_BP, breakpoint_handler);
-
-    register_interrupt_handler(19, example_i19);
-
+    register_interrupt_handler(14, page_fault_handler);
 
     kputs("ISR: Setting IDT");
     set_idt();
     kputs("ISR: enabling interrupts");
 }
 
-void example_i19(stack_t *stack) {
-    kprintf(
-        "Exception: INT 19\n"
-        "  instruction_pointer = 0x%X\n"
-        "  code_segment        = 0x%X\n"
-        "  cpu_flags           = 0x%X\n"
-        "  stack_pointer       = 0x%X\n"
-        "  stack_segment       = 0x%X\n",
-        stack->instruction_pointer,
-        stack->code_segment,
-        stack->cpu_flags,
-        stack->stack_pointer,
-        stack->stack_segment
-    );
-}
-
-void isr_handler(uint64_t id, uint64_t stack_addr)
+void isr_handler(isr_ctx_t *regs)
 {
-    stack_t *stack = get_stack(id, stack_addr);
+    uint8_t int_no = regs->int_no;
 
-    if (interrupt_handlers[id] != 0) {
-        isr_t handler = interrupt_handlers[id];
-        handler(get_stack(id, stack_addr));
-
+    if (interrupt_handlers[int_no] != 0) {
+        isr_t handler = interrupt_handlers[int_no];
+        handler(regs);
         return;
     }
 
     PANIC(
         "Received interrupt: %d - %s\n"
+        "  error_code          = 0x%X\n"
         "  instruction_pointer = 0x%X\n"
         "  code_segment        = 0x%X\n"
         "  cpu_flags           = 0x%X\n"
         "  stack_pointer       = 0x%X\n"
         "  stack_segment       = 0x%X",
-        id, exception_messages[id],
-        stack->instruction_pointer,
-        stack->code_segment,
-        stack->cpu_flags,
-        stack->stack_pointer,
-        stack->stack_segment
+        int_no, exception_messages[int_no],
+        regs->error_code,
+        regs->rip,
+        regs->cs,
+        regs->rflags,
+        regs->rsp,
+        regs->ss
     );
     while(1) {}
 }
 
-void irq_handler(uint64_t id, uint64_t stack_addr)
-{
-    if (id >= 40) {
-        outp(PIC2, PIC_EOI);
-    }
+// void irq_handler(uint64_t id, uint64_t stack_addr)
+// {
+//     if (id >= 40) {
+//         outp(PIC2, PIC_EOI);
+//     }
 
-    outp(PIC1, PIC_EOI);
+//     outp(PIC1, PIC_EOI);
 
-    if (interrupt_handlers[id] != 0) {
-        isr_t handler = interrupt_handlers[id];
-        handler(get_stack(id, stack_addr));
-    }
-}
+//     if (interrupt_handlers[id] != 0) {
+//         isr_t handler = interrupt_handlers[id];
+//         handler(get_stack(id, stack_addr));
+//     }
+// }
 
-void register_interrupt_handler(uint64_t id, isr_t handler)
-{
+void register_interrupt_handler(uint64_t id, isr_t handler) {
     interrupt_handlers[id] = handler;
 }
 
-stack_t* get_stack(uint64_t id, uint64_t stack_addr)
-{
-    // cf. https://github.com/0xAX/linux-insides/blob/master/interrupts/interrupts-3.md
-    //
-    //     +------------+
-    // +40 | %SS        |
-    // +32 | %RSP       |
-    // +24 | %RFLAGS    |
-    // +16 | %CS        |
-    //  +8 | %RIP       |
-    //   0 | ERROR CODE | <-- %RSP
-    //     +------------+
-    //
-    switch (id) {
-        case 8:
-        case 10:
-        case 11:
-        case 12:
-        case 13:
-        case 14:
-        case 17:
-            // skip error code, so that we always get the same stack_t
-            stack_addr += sizeof(uint64_t);
-            break;
-    }
+static void page_fault_handler(isr_ctx_t *regs __attribute__((unused)) ) {
+    uint64_t faulting_address;
+    asm volatile("mov %%cr2, %0" : "=r" (faulting_address));
 
-    return (stack_t*) (stack_addr + (NB_REGISTERS_PUSHED_BEFORE_CALL * sizeof(uint64_t)));
+    PANIC("PAGW FAULT on 0x%X\n", faulting_address);
 }
 
-void breakpoint_handler(stack_t *stack)
-{
-    kprintf(
-        "Exception: BREAKPOINT\n"
-        "  instruction_pointer = 0x%X\n"
-        "  code_segment        = 0x%X\n"
-        "  cpu_flags           = 0x%X\n"
-        "  stack_pointer       = 0x%X\n"
-        "  stack_segment       = 0x%X\n",
-        stack->instruction_pointer,
-        stack->code_segment,
-        stack->cpu_flags,
-        stack->stack_pointer,
-        stack->stack_segment
-    );
-}

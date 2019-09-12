@@ -19,6 +19,13 @@
 
 #define __UNUSED__ __attribute__((unused))
 
+#define GDT_NULL        0x00
+#define GDT_KERNEL_CODE 0x08
+#define GDT_KERNEL_DATA 0x10
+#define GDT_USER_CODE   0x18
+#define GDT_USER_DATA   0x20
+#define GDT_TSS         0x28 
+
 console_t __krnl_console;
 
 int a = 10;
@@ -76,10 +83,10 @@ void setup_task(task_t* task, void* app_data, uint32_t app_size) {
   +8 | %RIP       | <-- %RSP
   +------------+
   * */
-  *rsp-- = 0x10;	             // SS
+  *rsp-- = GDT_USER_DATA + 3;	             // SS
   *rsp-- = 0x200000 - 8; 		   // RSP  2MB - 8
   *rsp-- = 0x286; 		         // RFLAGS
-  *rsp-- = 0x08;		           // CS
+  *rsp-- = GDT_USER_CODE + 3;		           // CS
   *rsp-- = 0x0000000000000000; // entry point is always 0
   *rsp-- = 1;
   *rsp-- = 2;
@@ -115,9 +122,13 @@ task_t* current_task() {
 }
 
 void __switch_to(task_t* next __UNUSED__) {
+  int old_index = __krnl_console.current_index;
+  __krnl_console.current_index = 0;
+  kprintf("Task : 0x%X", next->pde);
   pde_user[0] = next->pde;
   // x86_set_cr3(TO_PHYS_U64(pml4e));
   x86_tlb_flush_all();
+  __krnl_console.current_index = old_index;
 }
 
 void kmain(/*unsigned long magic, unsigned long addr*/) {
@@ -140,6 +151,8 @@ void kmain(/*unsigned long magic, unsigned long addr*/) {
 
   // Jump into task switcher and start first task - after this - kernel main will not continue
   do_first_task_jump();
+
+  // asm volatile("int $19");
 
   while(1) { }
 }

@@ -7,13 +7,11 @@
 
 uint64_t __tick = 0;
 
-void timer_callback(stack_t *stack) {
+void timer_callback(isr_ctx_t *ctx __attribute__((unused))) {
     __tick++;
 
     // Change color - top-right char
     *(CONSOLE_VIDEO_MEMORY+159) += 1;
-
-    (void)(*stack); // dummy - disable unused warning
 }
 
 uint64_t timer_tick() {

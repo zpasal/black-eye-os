@@ -102,8 +102,10 @@ tmp_mem_bitmap:
     times 512 dq 0 ; temporary mem table 1bit = 4K total of 128MB
 
 global tss64
+global tss64.rsp0
 tss64:
     dd 0
+tss64.rsp0:
     times 3 dq 0 ; RSPn
     dq 0 ; Reserved
 interrupt_stack_table:

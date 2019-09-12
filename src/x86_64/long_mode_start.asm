@@ -11,6 +11,7 @@ extern gdt64
 extern gdt64.tss
 extern gdt64.pointer
 extern tss64
+extern tss64.rsp0
 
 %define KERNEL_VMA          0xFFFF800000000000
 
@@ -40,6 +41,8 @@ flush_rip:
 
     ; setup new stack
     mov rsp, kernel_stack_top
+    mov rax, tss64.rsp0
+    mov [rax], rsp
 
     ; enable 64bit TSS
     mov rdi, gdt64
