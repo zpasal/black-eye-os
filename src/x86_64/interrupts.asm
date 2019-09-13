@@ -95,6 +95,8 @@ isr_common_stub:
 
 ; define interruptions
 ; should be keep in sync with src/core/isr.h
+;; -----------------------------------------------
+;; STANDARD INTTERUPTS/TRAPS
 isr_stub_noerr 0
 isr_stub_noerr 1
 isr_stub_noerr 2
@@ -127,9 +129,27 @@ isr_stub_noerr 28
 isr_stub_noerr 29
 isr_stub_err 30
 isr_stub_noerr 31
+
+;; ----------------------------------------------
+;; IRQ SECTION
+;; IRQ 0 - F (32 - 47)
 ;isr_stub_irq 32 - scheduler
 isr_stub_irq 33 ; -- keyboard
-isr_stub_irq 34 ; -- mouse
+isr_stub_irq 34 
 isr_stub_irq 35
 isr_stub_irq 36
+isr_stub_irq 37
+isr_stub_irq 38
+isr_stub_irq 39
+isr_stub_irq 40
+isr_stub_irq 41
+isr_stub_irq 42
+isr_stub_irq 43
+isr_stub_irq 44
+isr_stub_irq 45 ; -- mouse
+isr_stub_irq 46
+isr_stub_irq 47
+
+;; -----------------------------------------------
+;; SYSCALL SECTION
 ; isr_stub_noerr 128 - syscall

@@ -30,7 +30,7 @@ static void keyboard_callback(isr_ctx_t *ctx __attribute__((unused))) {
 }
 
 void init_kernel_keyboard() {	
-  register_interrupt_handler(IRQ1, keyboard_callback);
+  register_interrupt_handler(ISR_IRQ1, keyboard_callback);
 	irq_enable(PIC_IRQ1);
 }
 

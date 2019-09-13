@@ -84,11 +84,22 @@ void init_kernel_isr()
     set_idt_gate(30, (uint64_t) isr_stub_30);
     set_idt_gate(31, (uint64_t) isr_stub_31);
 
-    set_idt_gate(IRQ0, (uint64_t) isr_stub_32);
-    set_idt_gate(IRQ1, (uint64_t) isr_stub_33);
-    set_idt_gate(IRQ2, (uint64_t) isr_stub_34);
-    set_idt_gate(IRQ3, (uint64_t) isr_stub_35);
-    set_idt_gate(IRQ4, (uint64_t) isr_stub_36);
+    set_idt_gate(ISR_IRQ0, (uint64_t) isr_stub_32);
+    set_idt_gate(ISR_IRQ1, (uint64_t) isr_stub_33);
+    set_idt_gate(ISR_IRQ2, (uint64_t) isr_stub_34);
+    set_idt_gate(ISR_IRQ3, (uint64_t) isr_stub_35);
+    set_idt_gate(ISR_IRQ4, (uint64_t) isr_stub_36);
+    set_idt_gate(ISR_IRQ5, (uint64_t) isr_stub_37);
+    set_idt_gate(ISR_IRQ6, (uint64_t) isr_stub_38);
+    set_idt_gate(ISR_IRQ7, (uint64_t) isr_stub_39);
+    set_idt_gate(ISR_IRQ8, (uint64_t) isr_stub_40);
+    set_idt_gate(ISR_IRQ9, (uint64_t) isr_stub_41);
+    set_idt_gate(ISR_IRQA, (uint64_t) isr_stub_42);
+    set_idt_gate(ISR_IRQB, (uint64_t) isr_stub_43);
+    set_idt_gate(ISR_IRQC, (uint64_t) isr_stub_44);
+    set_idt_gate(ISR_IRQD, (uint64_t) isr_stub_45);
+    set_idt_gate(ISR_IRQE, (uint64_t) isr_stub_46);
+    set_idt_gate(ISR_IRQF, (uint64_t) isr_stub_47);
     set_idt_gate(SYSCALL_NO, (uint64_t) isr_stub_128);
 
     register_interrupt_handler(14, page_fault_handler);

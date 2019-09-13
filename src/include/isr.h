@@ -3,6 +3,7 @@
 
 #include <idt.h>
 #include <stdint.h>
+#include <pic.h>
 
 
 // exceptions, cf. http://wiki.osdev.org/Exceptions
@@ -20,11 +21,24 @@
 #define EXCEPTION_GP 13
 #define EXCEPTION_PF 14
 
-#define IRQ0 32
-#define IRQ1 33
-#define IRQ2 34
-#define IRQ3 35
-#define IRQ4 36
+// IRQ 0..7 remaped to 0x20..0x27 
+// IRQ 8..15 remaped to 0x28..0x37
+#define ISR_IRQ0 (IRQ_BASE + PIC_IRQ0)
+#define ISR_IRQ1 (IRQ_BASE + PIC_IRQ1)
+#define ISR_IRQ2 (IRQ_BASE + PIC_IRQ2)
+#define ISR_IRQ3 (IRQ_BASE + PIC_IRQ3)
+#define ISR_IRQ4 (IRQ_BASE + PIC_IRQ4)
+#define ISR_IRQ5 (IRQ_BASE + PIC_IRQ5)
+#define ISR_IRQ6 (IRQ_BASE + PIC_IRQ6)
+#define ISR_IRQ7 (IRQ_BASE + PIC_IRQ7)
+#define ISR_IRQ8 (IRQ_BASE + PIC_IRQ8)
+#define ISR_IRQ9 (IRQ_BASE + PIC_IRQ9)
+#define ISR_IRQA (IRQ_BASE + PIC_IRQA)
+#define ISR_IRQB (IRQ_BASE + PIC_IRQB)
+#define ISR_IRQC (IRQ_BASE + PIC_IRQC)
+#define ISR_IRQD (IRQ_BASE + PIC_IRQD)
+#define ISR_IRQE (IRQ_BASE + PIC_IRQE)
+#define ISR_IRQF (IRQ_BASE + PIC_IRQF)
 
 #define SYSCALL_NO 0x80
 
@@ -61,12 +75,24 @@ extern void isr_stub_28();
 extern void isr_stub_29();
 extern void isr_stub_30();
 extern void isr_stub_31();
+// IRQs
 extern void isr_stub_32();
 extern void isr_stub_33();
 extern void isr_stub_34();
 extern void isr_stub_35();
 extern void isr_stub_36();
-
+extern void isr_stub_37();
+extern void isr_stub_38();
+extern void isr_stub_39();
+extern void isr_stub_40();
+extern void isr_stub_41();
+extern void isr_stub_42();
+extern void isr_stub_43();
+extern void isr_stub_44();
+extern void isr_stub_45();
+extern void isr_stub_46();
+extern void isr_stub_47();
+// SYSCALL
 extern void isr_stub_128();
 
 struct isr_ctx_struct {
