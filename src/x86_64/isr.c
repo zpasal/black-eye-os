@@ -1,5 +1,4 @@
 #include <isr.h>
-#include <ports.h>
 #include <kernel.h>
 #include <x86.h>
 #include <string.h>
@@ -51,28 +50,6 @@ void init_kernel_isr()
 {
     memset(interrupt_handlers, 0, 256 * sizeof(isr_t));
 
-    kputs("ISR: init irq ...");
-
-    // start initialization
-    outp(PIC1, 0x11);
-    outp(PIC2, 0x11);
-
-    // set IRQ base numbers for each PIC
-    outp(PIC1_DATA, IRQ_BASE);
-    outp(PIC2_DATA, IRQ_BASE + 8);
-
-    // use IRQ number 2 to relay IRQs from the slave PIC
-    outp(PIC1_DATA, 0x04);
-    outp(PIC2_DATA, 0x02);
-
-    // finish initialization
-    outp(PIC1_DATA, 0x01);
-    outp(PIC2_DATA, 0x01);
-
-    // mask all IRQs
-    outp(PIC1_DATA, 0x00);
-    outp(PIC2_DATA, 0x00);
-
     kputs("ISR: init gates ...");
     set_idt_gate(0, (uint64_t) isr_stub_0);
     set_idt_gate(1, (uint64_t) isr_stub_1);
@@ -112,20 +89,16 @@ void init_kernel_isr()
     set_idt_gate(IRQ2, (uint64_t) isr_stub_34);
     set_idt_gate(IRQ3, (uint64_t) isr_stub_35);
     set_idt_gate(IRQ4, (uint64_t) isr_stub_36);
-
-    set_idt_gate(0x80, (uint64_t) isr_stub_128);
+    set_idt_gate(SYSCALL_NO, (uint64_t) isr_stub_128);
 
     register_interrupt_handler(14, page_fault_handler);
 
-    kputs("ISR: Setting IDT");
     set_idt();
-    kputs("ISR: enabling interrupts");
 }
 
 void isr_handler(isr_ctx_t *regs)
 {
     uint8_t int_no = regs->int_no;
-
     if (interrupt_handlers[int_no] != 0) {
         isr_t handler = interrupt_handlers[int_no];
         handler(regs);

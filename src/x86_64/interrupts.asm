@@ -29,7 +29,8 @@ isr_stub_%1:
 global isr_stub_%1
 isr_stub_%1:
     cli
-    push qword %1
+    push qword 0
+    mov dword [rsp + 4], %1
     jmp isr_common_stub
 %endmacro
 
@@ -87,7 +88,7 @@ isr_common_stub:
     pop rbx
     pop rax
 
-    add rsp, 18     ; Cleans up the pushed error code and pushed ISR number
+    add rsp, 8     ; Cleans up the pushed error code and pushed ISR number
 
     sti
     iretq
@@ -127,8 +128,8 @@ isr_stub_noerr 29
 isr_stub_err 30
 isr_stub_noerr 31
 ;isr_stub_irq 32 - scheduler
-isr_stub_irq 33
-isr_stub_irq 34
+isr_stub_irq 33 ; -- keyboard
+isr_stub_irq 34 ; -- mouse
 isr_stub_irq 35
 isr_stub_irq 36
 ; isr_stub_noerr 128 - syscall

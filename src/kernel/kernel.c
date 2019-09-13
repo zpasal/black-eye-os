@@ -15,7 +15,9 @@
 #include <keyboard.h>
 #include <timer.h>
 #include <process.h>
+#include <pic.h>
 #include <pagging.h>
+#include <mouse.h>
 
 #define __UNUSED__ __attribute__((unused))
 
@@ -147,9 +149,11 @@ void kmain(/*unsigned long magic, unsigned long addr*/) {
 
   init_kernel_malloc();
   init_kernel_pagging();
+  init_kernel_pic();
   init_kernel_isr();
-  init_kernel_keyboard();
   init_kernel_timer();
+  init_kernel_keyboard();
+  init_kernel_mouse();
 
   setup_task(&tasks[0], dummy_app, dummy_app_len);
   setup_task(&tasks[1], dummy_app, dummy_app_len);

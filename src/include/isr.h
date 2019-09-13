@@ -4,12 +4,6 @@
 #include <idt.h>
 #include <stdint.h>
 
-#define PIC1        0x20 // Master PIC
-#define PIC2        0xA0 // Slave PIC
-#define PIC1_DATA   (PIC1 + 1)
-#define PIC2_DATA   (PIC2 + 1)
-#define PIC_EOI     0x20 // end of interrupt
-#define IRQ_BASE    0x20
 
 // exceptions, cf. http://wiki.osdev.org/Exceptions
 #define EXCEPTION_DE 0
@@ -25,13 +19,14 @@
 #define EXCEPTION_SS 12
 #define EXCEPTION_GP 13
 #define EXCEPTION_PF 14
-// ...
 
 #define IRQ0 32
 #define IRQ1 33
 #define IRQ2 34
 #define IRQ3 35
 #define IRQ4 36
+
+#define SYSCALL_NO 0x80
 
 // These functions are declared in interrupt.asm file
 extern void isr_stub_0();

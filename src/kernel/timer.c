@@ -1,8 +1,8 @@
 #include <timer.h>
 #include <isr.h>
-#include <ports.h>
 #include <memory.h>
 #include <console.h>
+#include <pic.h>
 #include <x86.h>
 
 uint64_t __tick = 0;
@@ -19,19 +19,14 @@ uint64_t timer_tick() {
 }
 
 void init_kernel_timer() {
-    // register_interrupt_handler(IRQ0, timer_callback);
+    // Setup 50Hz timer
     int divisor = 1193180 / TIMER_HZ;
-    outb(0x43, 0x36);
-    outb(0x40, divisor & 0xff);
-    outb(0x40, divisor >> 8);
-}
+    outp(0x43, 0x36);
+    outp(0x40, divisor & 0xff);
+    outp(0x40, divisor >> 8);
 
-void timer_enable() {
-    x86_sti();
-}
-
-void timer_disable() {
-    x86_cli();
+    // Start timer IRQ
+    irq_enable(PIC_IRQ0);
 }
 
 void krnl_delay(unsigned int delay) {
