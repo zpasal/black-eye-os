@@ -1,5 +1,6 @@
 ; ----------------------------------------------------------------
 ; - TASK SWITCH
+%define GDT_KERNEL_DATA   0x10
 %define GDT_USER_DATA   0x20
 
 extern next_task

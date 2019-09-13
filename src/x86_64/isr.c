@@ -8,7 +8,6 @@
 
 static void page_fault_handler(isr_ctx_t *regs);
 
-
 isr_t interrupt_handlers[256];
 const char* exception_messages[] = {
     "Division By Zero",
@@ -114,6 +113,8 @@ void init_kernel_isr()
     set_idt_gate(IRQ3, (uint64_t) isr_stub_35);
     set_idt_gate(IRQ4, (uint64_t) isr_stub_36);
 
+    set_idt_gate(0x80, (uint64_t) isr_stub_128);
+
     register_interrupt_handler(14, page_fault_handler);
 
     kputs("ISR: Setting IDT");
@@ -150,20 +151,6 @@ void isr_handler(isr_ctx_t *regs)
     while(1) {}
 }
 
-// void irq_handler(uint64_t id, uint64_t stack_addr)
-// {
-//     if (id >= 40) {
-//         outp(PIC2, PIC_EOI);
-//     }
-
-//     outp(PIC1, PIC_EOI);
-
-//     if (interrupt_handlers[id] != 0) {
-//         isr_t handler = interrupt_handlers[id];
-//         handler(get_stack(id, stack_addr));
-//     }
-// }
-
 void register_interrupt_handler(uint64_t id, isr_t handler) {
     interrupt_handlers[id] = handler;
 }
@@ -174,4 +161,3 @@ static void page_fault_handler(isr_ctx_t *regs __attribute__((unused)) ) {
 
     PANIC("PAGW FAULT on 0x%X\n", faulting_address);
 }
-

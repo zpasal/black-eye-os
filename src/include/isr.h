@@ -72,6 +72,8 @@ extern void isr_stub_34();
 extern void isr_stub_35();
 extern void isr_stub_36();
 
+extern void isr_stub_128();
+
 struct isr_ctx_struct {
 	uint64_t r15;
 	uint64_t r14;

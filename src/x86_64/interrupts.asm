@@ -65,7 +65,7 @@ isr_common_stub:
     push r13
     push r14
     push r15
-
+    
     ; call handler
     mov rdi, rsp
     call isr_handler
@@ -126,9 +126,9 @@ isr_stub_noerr 28
 isr_stub_noerr 29
 isr_stub_err 30
 isr_stub_noerr 31
-;isr_stub_irq 32
+;isr_stub_irq 32 - scheduler
 isr_stub_irq 33
 isr_stub_irq 34
 isr_stub_irq 35
 isr_stub_irq 36
-
+; isr_stub_noerr 128 - syscall

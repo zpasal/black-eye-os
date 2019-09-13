@@ -41,6 +41,16 @@ void kprintf(const char *fmt, ...) {
   va_end(args);
 }
 
+void kprintf_xy(int x, int y, const char *fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  int old_index = __krnl_console.current_index;
+  __krnl_console.current_index = x*2 + y*25;
+  (void)_printf(fmt, args, cprintf_help, &__krnl_console);
+  __krnl_console.current_index = old_index;
+  va_end(args);
+}
+
 void PANIC(const char *fmt, ...) {
   __krnl_console.color = LIGHTRED;
   va_list args;
@@ -122,13 +132,9 @@ task_t* current_task() {
 }
 
 void __switch_to(task_t* next __UNUSED__) {
-  int old_index = __krnl_console.current_index;
-  __krnl_console.current_index = 0;
-  kprintf("Task : 0x%X", next->pde);
+  kprintf_xy(0, 0, "Task : 0x%X", next->pde);
   pde_user[0] = next->pde;
-  // x86_set_cr3(TO_PHYS_U64(pml4e));
   x86_tlb_flush_all();
-  __krnl_console.current_index = old_index;
 }
 
 void kmain(/*unsigned long magic, unsigned long addr*/) {
@@ -153,6 +159,5 @@ void kmain(/*unsigned long magic, unsigned long addr*/) {
   do_first_task_jump();
 
   // asm volatile("int $19");
-
   while(1) { }
 }
