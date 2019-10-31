@@ -162,6 +162,5 @@ void kmain(/*unsigned long magic, unsigned long addr*/) {
   // Jump into task switcher and start first task - after this - kernel main will not continue
   do_first_task_jump();
 
-  // asm volatile("int $19");
   while(1) { }
 }
