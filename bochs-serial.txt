@@ -1,0 +1,16 @@
+VIDEO : e0000000
+KHEAP: init ...
+KHEAP: Kernel heap starts at: 0xFFFF80000011A000
+MMU PAGGING: init ...
+MMU: Video memory e0000000
+MMU FRAME: Bitset used mem: 2
+MMU FRAME: End of kernel mem: 0x11A002 PAGES=1
+MMU FRAME: New page: 0x1
+ISR: init gates ...
+Received interrupt: 39 - 8
+  error_code          = 0x0
+  instruction_pointer = 0x0
+  code_segment        = 0x1B
+  cpu_flags           = 0x286
+  stack_pointer       = 0x1FFFF8
+  stack_segment       = 0x23

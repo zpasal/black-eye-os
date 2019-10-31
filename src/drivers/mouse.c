@@ -65,9 +65,9 @@ static void mouse_callback(isr_ctx_t *ctx __attribute__((unused))) {
       mouse_cycle = 0;
       break;
   }
-  if (mouse_cycle == 0) {
-    kprintf_xy(30, 0, "M: (%i,%i)        ", mouse_x, mouse_y);
-  }
+  // if (mouse_cycle == 0) {
+  //   kprintf_xy(30, 0, "M: (%i,%i)        ", mouse_x, mouse_y);
+  // }
   pic_acknowledge(PIC_IRQC);
 }
 

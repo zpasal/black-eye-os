@@ -15,8 +15,11 @@
 #include <keyboard.h>
 #include <timer.h>
 #include <process.h>
+#include <pci.h>
 #include <pic.h>
+#include <serial.h>
 #include <pagging.h>
+#include <vesa.h>
 #include <mouse.h>
 
 #define __UNUSED__ __attribute__((unused))
@@ -31,6 +34,11 @@
 console_t __krnl_console;
 
 int a = 10;
+
+int serial_printf_help(unsigned c, void *ptr __UNUSED__) {
+  serial_write_com(1, c);
+  return 0;
+}
 
 void kputs(char *string) {
   console_puts(&__krnl_console, string);
@@ -57,9 +65,16 @@ void PANIC(const char *fmt, ...) {
   __krnl_console.color = LIGHTRED;
   va_list args;
   va_start(args, fmt);
-  (void)_printf(fmt, args, cprintf_help, &__krnl_console);
+  (void)_printf(fmt, args, serial_printf_help, NULL);
   va_end(args);
   x86_hlt(); 
+}
+
+void _kdebug(const char *fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  (void)_printf(fmt, args, serial_printf_help, NULL);
+  va_end(args);
 }
 
 void init_kernel_console() {
@@ -68,9 +83,9 @@ void init_kernel_console() {
 }
 
 void init_kernel_malloc() {
-  kputs("KHEAP: init ...");
+  DEBUG("KHEAP: init ...\n");
   init_kmalloc();
-  kprintf("KHEAP: Kernel heap starts at: 0x%X\n", __kheap_start);
+  DEBUG("KHEAP: Kernel heap starts at: 0x%X\n", __kheap_start);
 }
 
 task_t tasks[3];
@@ -134,19 +149,21 @@ task_t* current_task() {
 }
 
 void __switch_to(task_t* next __UNUSED__) {
-  kprintf_xy(0, 0, "Task : 0x%X", next->pde);
   pde_user[0] = next->pde;
   x86_tlb_flush_all();
 }
 
-void kmain(/*unsigned long magic, unsigned long addr*/) {
+void kmain(unsigned long magic __UNUSED__, multiboot_info_t *mbi_phys) {
 
   //BgaSetVideoMode(1024, 768, 24, 1, 1);
 
   init_kernel_console();
+  init_kernel_serial();
+
   kprintf("\nBlackEye OS\n");
   current_task_index = 0;
 
+  init_kernel_vesa(TO_VMA_PTR(multiboot_info_t *, mbi_phys));
   init_kernel_malloc();
   init_kernel_pagging();
   init_kernel_pic();
@@ -158,6 +175,8 @@ void kmain(/*unsigned long magic, unsigned long addr*/) {
   setup_task(&tasks[0], dummy_app, dummy_app_len);
   setup_task(&tasks[1], dummy_app, dummy_app_len);
   setup_task(&tasks[2], dummy_app, dummy_app_len);
+
+  memset(KERNEL_VIDEO_MEMORY, 0xFFFFFF, 1024 * 4);
 
   // Jump into task switcher and start first task - after this - kernel main will not continue
   do_first_task_jump();

@@ -50,7 +50,7 @@ void init_kernel_isr()
 {
     memset(interrupt_handlers, 0, 256 * sizeof(isr_t));
 
-    kputs("ISR: init gates ...");
+    DEBUG("ISR: init gates ...\n");
     set_idt_gate(0, (uint64_t) isr_stub_0);
     set_idt_gate(1, (uint64_t) isr_stub_1);
     set_idt_gate(2, (uint64_t) isr_stub_2);

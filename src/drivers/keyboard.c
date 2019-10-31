@@ -6,7 +6,7 @@
 
 static void keyboard_callback(isr_ctx_t *ctx __attribute__((unused))) {
   uint8_t scancode = inp(KEYBOARD_DATA_PORT);
-  kprintf_xy(20, 0, "P:%d", scancode);
+  DEBUG("DRV[KEY] scancode:%d\n", scancode);
 
   pic_acknowledge(PIC_IRQ1);
 }
