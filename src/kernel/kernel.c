@@ -21,6 +21,8 @@
 #include <pagging.h>
 #include <vesa.h>
 #include <mouse.h>
+#include <gfx.h>
+#include <windows.h>
 
 #define __UNUSED__ __attribute__((unused))
 
@@ -176,7 +178,15 @@ void kmain(unsigned long magic __UNUSED__, multiboot_info_t *mbi_phys) {
   setup_task(&tasks[1], dummy_app, dummy_app_len);
   setup_task(&tasks[2], dummy_app, dummy_app_len);
 
-  memset(KERNEL_VIDEO_MEMORY, 0xFFFFFF, 1024 * 4);
+
+  component_t win1;
+  win1.x = 100;
+  win1.y = 100;
+  win1.width = 600;
+  win1.height = 480;
+  strcpy(win1.title, "First application");
+
+  window_draw(&win1);    
 
   // Jump into task switcher and start first task - after this - kernel main will not continue
   do_first_task_jump();

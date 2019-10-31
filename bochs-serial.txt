@@ -7,7 +7,8 @@ MMU: Video memory e0000000
 MMU FRAME: End of kernel mem: 0x11A002 PAGES=1
 MMU FRAME: New page: 0x1
 ISR: init gates ...
-Received interrupt: 39 - 8
+Draw W: (100,100)-(700,580)
+Received interrupt: 39 - 8
   error_code          = 0x0
   instruction_pointer = 0x0
   code_segment        = 0x1B

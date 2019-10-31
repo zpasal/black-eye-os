@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <types.h>
+#include <assert.h>
 
 void *memset(void* dest, register int value, register uint64_t len) {
 	register unsigned char *ptr = (unsigned char*)dest;
@@ -25,4 +26,15 @@ size_t strlen(const char *str) {
     	s++;
 	}
 	return s;
+}
+
+char *strcpy_check(char *dest, char *src, size_t slen) {
+  size_t len = strlen(src);
+  assert(len >= slen);
+  return memcpy(dest, src, len + 1);
+}
+
+char *strcpy(char *dest, char *src) {
+  size_t len = strlen(src);
+  return memcpy(dest, src, len + 1);
 }

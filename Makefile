@@ -20,7 +20,7 @@ cflags := -fno-pic  -m64 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
 		  -ffreestanding -mno-red-zone -mno-mmx -mno-sse -mno-sse2 \
 	      -I $(c_include) -nostartfiles -nodefaultlibs -fno-exceptions \
 	      -Wall -Wextra -Werror -c -mcmodel=large
-c_source_files := $(wildcard src/drivers/*.c) $(wildcard src/kernel/*.c) $(wildcard src/lib/*.c) $(wildcard src/x86_64/*.c)
+c_source_files := $(wildcard src/drivers/*.c) $(wildcard src/gfx/*.c) $(wildcard src/kernel/*.c) $(wildcard src/lib/*.c) $(wildcard src/x86_64/*.c)
 c_object_files := $(patsubst src/%.c, \
 	build/%.o, $(c_source_files))
 quemu_mem := 128
