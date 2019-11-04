@@ -15,10 +15,15 @@ void init_kernel_pic() {
     outp(PIC_MASTER_DATA, 0x01);  // set x86 mode
     outp(PIC_SLAVE_DATA, 0x01);   // set x86 mode
 
-    outp(PIC_MASTER_DATA, 0xFF);  // all interrupts enabled
+    outp(PIC_MASTER_DATA, 0xFF);  // all interrupts disabled
     outp(PIC_SLAVE_DATA, 0xFF);
 
     // JUST IN CASE ?!?
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
+    __asm__ __volatile__("nop");
     __asm__ __volatile__("nop");
 }
 

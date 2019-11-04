@@ -11,7 +11,7 @@ void timer_callback(isr_ctx_t *ctx __attribute__((unused))) {
     __tick++;
 
     // Change color - top-right char
-    // *(CONSOLE_VIDEO_MEMORY+159) += 1;
+    *(CONSOLE_VIDEO_MEMORY+159) += 1;
 }
 
 uint64_t timer_tick() {

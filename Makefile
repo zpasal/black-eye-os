@@ -2,6 +2,7 @@ cc = x86_64-elf-gcc
 ld = x86_64-elf-ld
 as = x86_64-elf-as
 objdump = x86_64-elf-objdump
+objcopy = x86_64-elf-objcopy
 nasm = nasm
 qemu = qemu-system-x86_64
 bochs = bochs
@@ -37,10 +38,10 @@ run: $(iso)
 	$(qemu) -cdrom $(iso) -m $(quemu_mem) -drive file=$(floppy_image),if=floppy,format=raw -boot order=d  
 
 run-bocsh: $(iso)
-	$(bochs) -f bochsrc.txt -q
+	$(bochs) -f bochsrc.txt -q -rc bochs.rc
 
 run-qemu: $(iso)
-	$(qemu) -cdrom $(iso) -m $(quemu_mem) -drive file=$(floppy_image),if=floppy,format=raw -boot order=d -s
+	$(qemu) -cdrom $(iso) -m $(quemu_mem) -drive file=$(floppy_image),if=floppy,format=raw -boot order=d -s -S
 
 iso: $(iso)
 

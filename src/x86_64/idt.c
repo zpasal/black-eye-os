@@ -1,10 +1,11 @@
 #include <idt.h>
+#include <kernel.h>
 
 idt_gate_t idt[IDT_ENTRIES];
 idt_register_t idt_reg;
 
 void set_idt_gate(uint16_t n, uint64_t handler) {
-    idt[n].selector = 0x08;
+    idt[n].selector = GDT_KERNEL_CODE;
     idt[n].ptr_low  = (uint16_t) handler;
     idt[n].ptr_mid  = (uint16_t) (handler >> 16);
     idt[n].ptr_high = (uint32_t) (handler >> 32);

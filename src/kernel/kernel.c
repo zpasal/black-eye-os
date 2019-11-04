@@ -1,41 +1,56 @@
 #include <multiboot.h>
-#include <console.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <console.h>
 #include <kernel.h>
 #include <memory.h>
-#include <elf.h>
 #include <x86.h>
 #include <stdarg.h>
-#include <bitset.h>
 #include <_printf.h>
-#include <kheap.h>
 #include <isr.h>
 #include <timer.h>
 #include <keyboard.h>
 #include <timer.h>
 #include <process.h>
-#include <pci.h>
 #include <pic.h>
-#include <serial.h>
 #include <pagging.h>
 #include <vesa.h>
 #include <mouse.h>
+#include <serial.h>
+#include <process.h>
 #include <gfx.h>
 #include <windows.h>
 
 #define __UNUSED__ __attribute__((unused))
 
-#define GDT_NULL        0x00
-#define GDT_KERNEL_CODE 0x08
-#define GDT_KERNEL_DATA 0x10
-#define GDT_USER_CODE   0x18
-#define GDT_USER_DATA   0x20
-#define GDT_TSS         0x28 
-
 console_t __krnl_console;
 
-int a = 10;
+// For now include app applications as binary arrays ... see src/app/compile.sh
+#include <../apps/dummy_array.c>
+
+
+void init_win_manager() {
+  component_t w;
+  w.x = 100;
+  w.y = 100;
+  w.height = 400;
+  w.width = 600;
+  strcpy(w.title, "Window [Kernel log console]");
+  window_draw(&w);
+
+  gfx_puts(110, 180, WHITE, GRAY, "Black-Eye-OS v0.1");
+  gfx_puts(110, 140, WHITE, GRAY, "Init kernel console    ... DONE");
+  gfx_puts(110, 150, WHITE, GRAY, "Init driver [serial]   ... DONE");
+  gfx_puts(110, 160, WHITE, GRAY, "Init driver [vesa]     ... DONE");
+  gfx_puts(110, 170, WHITE, GRAY, "Init driver [mmu]      ... DONE");
+  gfx_puts(110, 180, WHITE, GRAY, "Init driver [pic]      ... DONE");
+  gfx_puts(110, 190, WHITE, GRAY, "Init driver [isr]      ... DONE");
+  gfx_puts(110, 200, WHITE, GRAY, "Init driver [timer]    ... DONE");
+  gfx_puts(110, 210, WHITE, GRAY, "Init driver [keybaord] ... DONE");
+  gfx_puts(110, 220, WHITE, GRAY, "Init kernel [mouse]    ... DONE");
+}
 
 int serial_printf_help(unsigned c, void *ptr __UNUSED__) {
   serial_write_com(1, c);
@@ -84,112 +99,27 @@ void init_kernel_console() {
   console_init(&__krnl_console);
 }
 
-void init_kernel_malloc() {
-  DEBUG("KHEAP: init ...\n");
-  init_kmalloc();
-  DEBUG("KHEAP: Kernel heap starts at: 0x%X\n", __kheap_start);
-}
-
-task_t tasks[3];
-#define TASK_STACK_SIZE 512
-int current_task_index;
-
-#include <../apps/dummy_array.c>
-
-void setup_task(task_t* task, void* app_data, uint32_t app_size) {
-
-  // setup task MMU
-  uint8_t* task_memory = kmalloc_aligned(PAGE_SIZE);
-  memcpy(task_memory, app_data, app_size);
-  uint64_t* rsp = (uint64_t*)task_memory;
-  rsp--;
-  /*
-  +------------+
-  +40 | %SS        |
-  +32 | %RSP       |
-  +24 | %RFLAGS    |
-  +16 | %CS        |
-  +8 | %RIP       | <-- %RSP
-  +------------+
-  * */
-  *rsp-- = GDT_USER_DATA + 3;	             // SS
-  *rsp-- = 0x200000 - 8; 		   // RSP  2MB - 8
-  *rsp-- = 0x286; 		         // RFLAGS
-  *rsp-- = GDT_USER_CODE + 3;		           // CS
-  *rsp-- = 0x0000000000000000; // entry point is always 0
-  *rsp-- = 1;
-  *rsp-- = 2;
-  *rsp-- = 3;
-  *rsp-- = 4;
-  *rsp-- = 5;
-  *rsp-- = 6;
-  *rsp-- = 7;
-  *rsp-- = 8;
-  *rsp-- = 9;
-  *rsp-- = 10;
-  *rsp-- = 11;
-  *rsp-- = 12;
-  *rsp-- = 13;
-  *rsp-- = 14;
-  *rsp-- = 15;
-  // rsp -= 14; // rax,rbx,rcx,rdx,rsi,rdi,rbp,r8,r9,r10,r11,r12,r13,r14,r15 - switch.asm irq0
-
-  task->rsp = (uint64_t)(rsp+1); //- switch will do it
-
-  task->pde.all = TO_PHYS_U64(task_memory) | 0x87; // Present + Write + CPL3
- }
-
-task_t* next_task() {
-	current_task_index++;
-	current_task_index = current_task_index % 3;
-
-	return &tasks[current_task_index];
-}
-
-task_t* current_task() {
-	return &tasks[current_task_index];
-}
-
-void __switch_to(task_t* next __UNUSED__) {
-  pde_user[0] = next->pde;
-  x86_tlb_flush_all();
-}
-
-void kmain(unsigned long magic __UNUSED__, multiboot_info_t *mbi_phys) {
-
-  //BgaSetVideoMode(1024, 768, 24, 1, 1);
-
+void kmain(unsigned long magic __UNUSED__, multiboot_info_t *mbi_phys __UNUSED__) {
   init_kernel_console();
   init_kernel_serial();
-
-  kprintf("\nBlackEye OS\n");
-  current_task_index = 0;
-
-  init_kernel_vesa(TO_VMA_PTR(multiboot_info_t *, mbi_phys));
-  init_kernel_malloc();
+  // init_kernel_vesa(TO_VMA_PTR(multiboot_info_t *, mbi_phys));
   init_kernel_pagging();
   init_kernel_pic();
   init_kernel_isr();
   init_kernel_timer();
-  init_kernel_keyboard();
-  init_kernel_mouse();
+  // init_kernel_keyboard();
+  // init_kernel_mouse();
 
-  setup_task(&tasks[0], dummy_app, dummy_app_len);
-  setup_task(&tasks[1], dummy_app, dummy_app_len);
-  setup_task(&tasks[2], dummy_app, dummy_app_len);
+  // init_win_manager();
 
-
-  component_t win1;
-  win1.x = 100;
-  win1.y = 100;
-  win1.width = 600;
-  win1.height = 480;
-  strcpy(win1.title, "First application");
-
-  window_draw(&win1);    
+  current_task_index = 0;
+  create_process_user(&tasks[0], dummy_app, dummy_app_len);
+  create_process_user(&tasks[1], dummy_app, dummy_app_len);
+  // create_process_user(&tasks[2], dummy_app, dummy_app_len);
 
   // Jump into task switcher and start first task - after this - kernel main will not continue
   do_first_task_jump();
 
-  while(1) { }
+  while(1) { 
+  }
 }

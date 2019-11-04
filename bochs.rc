@@ -1,0 +1,3 @@
+show dbg_all
+lb 0
+lb 0xffff80000010478b

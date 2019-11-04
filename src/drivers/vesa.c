@@ -3,7 +3,6 @@
 #include <string.h>
 #include <vesa.h>
 #include <x86.h>
-#include <pci.h>
 
 struct video_info_struct video_info;
 

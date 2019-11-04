@@ -51,7 +51,7 @@ irq0_first_jump:
     mov ds, ax
     mov es, ax
     mov fs, ax
-    mov gs, ax
+    mov gs, ax    
 
     pop r15
     pop r14
@@ -68,5 +68,5 @@ irq0_first_jump:
     pop rcx
     pop rbx
     pop rax
-    sti
+    ; sti
     iretq

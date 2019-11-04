@@ -6,6 +6,6 @@ start:
     mov rax, 0
 loop_infi:
     inc rax    
-    int 0x80
+    ; int 0x80
     jmp loop_infi
     

@@ -11,13 +11,13 @@ multiboot_header:
     dd   GRUB_MULTIBOOT_ARCHITECTURE_I386
     dd   multiboot_header_end - multiboot_header
     dd   -(MULTIBOOT2_HEADER_MAGIC + GRUB_MULTIBOOT_ARCHITECTURE_I386 + (multiboot_header_end - multiboot_header))
-framebuffer_tag_start:  
-    dw MULTIBOOT_HEADER_TAG_FRAMEBUFFER
-    dw MULTIBOOT_HEADER_TAG_OPTIONAL
-    dd framebuffer_tag_end - framebuffer_tag_start
-    dd 1024
-    dd 768
-    dd 32
+; framebuffer_tag_start:  
+;     dw MULTIBOOT_HEADER_TAG_FRAMEBUFFER
+;     dw MULTIBOOT_HEADER_TAG_OPTIONAL
+;     dd framebuffer_tag_end - framebuffer_tag_start
+;     dd 1024
+;     dd 768
+;     dd 32
 framebuffer_tag_end:
     dw MULTIBOOT_HEADER_TAG_END
     dw 0
