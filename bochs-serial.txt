@@ -1,34 +1,0 @@
-MMU: Frames 64, 2
-MMU: Frame set bit for 0x0 0 0
-MMU: Frame set bit for 0x200000 0 1
-MMU: Used Mem 2KB
-MMU: Krnl space page needed: 1
-MMU: Video memory 0
-MMU: Heap init : start:0xFFFF80000011D100 end:0xFFFF800000200000
-MMU: Heap first block size : 929520
-MMU: frame mmu_frame_find_first
-MMU: frame testing frame 0
-MMU: frame testing frame bit 0
-MMU: frame testing frame bit 1
-MMU: frame testing frame bit 2
-MMU: Frame set bit for 0x400000 0 2
-MMU: alloc_frame_temp frame ... 0x400000
-PPC: create_process_user p addr ... 0x400000
-PROC: Task created : tm0: 0xFFFFC00020000000 (p:0x400000) rsp:0xFFFFC0001FFFFF60
-MMU: frame mmu_frame_find_first
-MMU: frame testing frame 0
-MMU: frame testing frame bit 0
-MMU: frame testing frame bit 1
-MMU: frame testing frame bit 2
-MMU: frame testing frame bit 3
-MMU: Frame set bit for 0x600000 0 3
-MMU: alloc_frame_temp frame ... 0x600000
-PPC: create_process_user p addr ... 0x600000
-PROC: Task created : tm0: 0xFFFFC00020200000 (p:0x600000) rsp:0xFFFFC000201FFF60
-Received interrupt: 39 - 8
-  error_code          = 0x0
-  instruction_pointer = 0x0
-  code_segment        = 0x1B
-  cpu_flags           = 0x286
-  stack_pointer       = 0x1FFFF8
-  stack_segment       = 0x23
